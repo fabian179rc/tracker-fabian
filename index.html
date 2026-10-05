@@ -218,6 +218,7 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .abox h3{font-size:17px;margin-bottom:6px}.abox p{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.45}
 .abox input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit;margin-bottom:8px}
 .arow{display:flex;gap:8px;margin-top:6px}.arow .btn{flex:1}.aerr{font-size:12px;color:var(--red);margin-top:8px;min-height:14px}
+.compact .dn{margin-left:5px;padding:0 6px}
 </style>
 </head>
 <body>
@@ -257,7 +258,16 @@ function migrate(o){const m=o.metrics||{},c=o.checks||{},d=newDay();
  d.sweetsPlanned=!!c.dulce;d.train=c.entreno?'train':null;
  d.habits={respiro:!!c.respiro,camine:!!c.camine,levante:!!c.levante,micro:!!c.micropausa};
  d.note=o.note||'';return d}
-function load(){try{const n=JSON.parse(localStorage.getItem(KEY)||'null');if(n)return n}catch(e){}
+function migGroups(d){if(!d)return false;let ch=false;
+ const has=Object.keys(d.done||{}).some(k=>/^(warm|neck|hipo):/.test(k))||['warm','neck','hipo'].some(g=>d.wk&&d.wk[g]!==undefined)||['warm','neck','hipo'].some(g=>(d.lastEx||'').startsWith(g+':'));
+ if(!has)return false;
+ let n=0;for(let x=0;x<3;x++)if(dayTouched(d,x)){n=x;break}
+ const fix=k=>k.replace(/^(warm|neck|hipo):/,'$1'+n+':');
+ ['done','tm'].forEach(f=>{if(!d[f])return;const o={};Object.keys(d[f]).forEach(k=>{const nk=fix(k);if(nk!==k)ch=true;o[nk]=d[f][k]});d[f]=o});
+ ['warm','neck','hipo'].forEach(g=>{if(d.wk&&d.wk[g]!==undefined){d.wk[g+n]=d.wk[g];delete d.wk[g];ch=true}});
+ if(d.lastEx)d.lastEx=fix(d.lastEx);
+ if(ch)d._u=Date.now();return ch}
+function load(){try{const n=JSON.parse(localStorage.getItem(KEY)||'null');if(n){Object.keys(n).forEach(k=>migGroups(n[k]));return n}}catch(e){}
  const out={};try{const old=JSON.parse(localStorage.getItem(OLDKEY)||'{}');for(const k in old)out[k]=migrate(old[k])}catch(e){}return out}
 let showTrain=null,db=load(),cur=todayKey(),lastToday=todayKey(),tab='hoy',exDay=0,range=30,calMonth=todayKey().slice(0,7),calSel=null;
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
@@ -405,7 +415,10 @@ function sessEnd(){upd(d=>{const s=d.sess,n=Date.now();if(!s)return;if(s.pa){s.p
 function sessResume(){upd(d=>{const s=d.sess,n=Date.now();if(!s)return;s.pt+=n-s.end;s.end=null;d.last=n})}
 function timerCard(d){const live=cur===todayKey(),s=d.sess,st=!s?0:s.end?3:s.pa?2:1;
  const b=!live?'':st===0?'<button class="tbn" onclick="sessStart()">▶ Iniciar</button>':st===3?'<button class="tbn" onclick="sessResume()">▶ Reanudar</button>':`<button class="tbn" title="${st===2?'Seguir':'Pausa'}" onclick="sessPause()">${st===2?'▶':'⏸'}</button><button class="tbn" title="Terminar entreno" onclick="sessEnd()">■</button>`;
- return `<div class="card tm"><span class="ct">⏱ Entreno</span><span class="tv${st===1?' run':''}" id="sessT">${fmt(sessMs(d,cur))}</span>${b}</div>`}
+ const rs=live&&(s||Object.keys(d.done||{}).length)?'<button class="tbn" title="Borrar el progreso de entreno de hoy" onclick="resetToday()">↺</button>':'';
+ return `<div class="card tm"><span class="ct">⏱ Entreno</span><span class="tv${st===1?' run':''}" id="sessT">${fmt(sessMs(d,cur))}</span>${b}${rs}</div>`}
+function resetToday(){if(!confirm('¿Borrar todo el progreso de entreno de hoy (series, tiempos y cronómetro)?'))return;
+ upd(d=>{d.wk={};d.done={};d.tm={};d.sess=null;d.last=null;d.lastEx=null;if(d.train==='train')d.train=null});toast('Entreno de hoy reiniciado')}
 function tick(){const t=todayKey(),d=db[t];
  if(t!==lastToday){const was=cur===lastToday;lastToday=t;if(was){cur=t;exDay=suggestDay()}render();return}
  const el=document.getElementById('sessT');if(el&&cur===t)el.textContent=fmt(sessMs(d,t));
@@ -421,12 +434,12 @@ function cycleState(){const t=todayKey();let marks=new Set(),prev=-1,before=-1;
 function suggestDay(){const d=db[todayKey()];if(d)for(let n=0;n<3;n++)if(dayTouched(d,n))return n;return (cycleState().before+1)%3}
 function setsDone(d,g,i,e){const v=(d.wk[g]||{})[i];return v===true?e.sets:Math.min(+v||0,e.sets)}
 function timesDone(d,g,i){return +((d.done||{})[g+':'+i])||0}
-function isTip(g){return g==='warm'||g==='neck'||g==='hipo'||g[0]==='s'}
+function isTip(g){return /^(warm|neck|hipo)/.test(g)||g[0]==='s'}
 function exItem(e,group,i,count,times,ro,tm,lr){
  const rem=e.sets-count,part=count>0&&!ro,was=times>0;
  const th=e.imgs.map(x=>`<img src="${IMG[x[0]]||''}" title="${x[1]}" alt="${esc(e.name)} — ${x[1]}" onclick="event.stopPropagation();zoom('${x[0]}')">`).join('');
  const pips=e.sets>1&&!ro?`<span class="pips">${Array.from({length:e.sets},(_,k)=>`<i class="${k<count?'f':''}"></i>`).join('')}</span>`:'';
- const chip=was?(ro?`<span class="dn">✓ hecho${times>1?' ×'+times:''}</span>`:`<span class="dn" title="Guardado en Progreso e Historial. Tocá la ✕ para deshacer" onclick="event.stopPropagation();undoEx('${group}',${i})">✓ hecho hoy${times>1?' ×'+times:''} <b>✕</b></span>`):(ro?`<span class="dn no">no hecho</span>`:'');
+ const chip=was?(ro?`<span class="dn">✓ hecho${times>1?' ×'+times:''}</span>`:`<span class="dn" title="Guardado en Progreso e Historial. Tocá la ✕ para deshacer" onclick="event.stopPropagation();undoEx('${group}',${i})">✓${times>1?' ×'+times:''} <b>✕</b></span>`):(ro?`<span class="dn no">no hecho</span>`:'');
  const circ=ro?(was?'✓':'–'):rem;
  return `<div class="ex${ro&&!was?' skipped':''}"><div class="ex-top"${ro?'':` onclick="tapEx('${group}',${i},${e.sets})"`}><div class="sc ${ro?(was?'on':''):part?'part':was?'was':''}"${ro?'':' title="Tocá para descontar una serie"'}>${circ}</div>
   <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div>${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}${isTip(group)?'':`<div class="ex-desc">${e.desc}</div>`}</div>
@@ -442,7 +455,7 @@ function zoom(k){document.getElementById('lbimg').src=IMG[k];document.getElement
 function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+dayIdx,SL=STRETCH[dayIdx];
  const sum=a=>a.reduce((x,y)=>x+y,0);
  const cnt=(grp,list)=>list.map((e,i)=>timesDone(d,grp,i)>0?e.sets:(ro?0:setsDone(d,grp,i,e)));
- const parts=[['warm',WARMUP],[g,w.ex],['neck',NECK],[sg,SL]];
+ const wg='warm'+dayIdx,ng='neck'+dayIdx,hg='hipo'+dayIdx,parts=[[wg,WARMUP],[g,w.ex],[ng,NECK],[sg,SL]];
  const dn=Object.fromEntries(parts.map(([grp,l])=>[grp,sum(cnt(grp,l))])),tt=Object.fromEntries(parts.map(([grp,l])=>[grp,sum(l.map(e=>e.sets))]));
  const T=sum(Object.values(tt)),D=sum(Object.values(dn)),pct=Math.round(D/T*100);
  const prog=`<div class="card pt"><div class="ptl"><span class="ct">Progreso total</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div><div class="sub">${pct===100?'¡Día completo! 💪':D+' de '+T+' series/ejercicios'}</div></div>`;
@@ -452,14 +465,14 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
  const top=ro?`<div class="toprow"><div class="card eq"><div class="ct">Entreno: Día ${dayIdx+1} — ${w.title.split('—')[1].trim()}${d.sess&&sessMs(d,showTrain)>0?' · ⏱ '+fmt(sessMs(d,showTrain)):''}</div></div>${prog}</div>`
   :`<div class="toprow"><div class="dtabs">${WORKOUTS.map((x,i)=>`<button class="${i===dayIdx?'on':''}" onclick="exDay=${i};render()">${cs.marks.has(i)?'<span class="ck">✓</span>':''}${live&&i===suggestDay()&&!(tdy&&dayDone(tdy,i))?'<span class="hy">HOY TOCA</span>':''}Día ${i+1}<small>${['Total A','Espalda','Total B'][i]}</small></button>`).join('')}</div>${equipCard()}${timerCard(d)}${prog}</div>`;
  return `${top}
-  <div class="g c3 ent"><div class="card compact"><div class="ch"><span class="ct">Calentamiento · 10 min</span><span class="badge amber">${dn.warm}/${tt.warm}</span></div>
-  ${raw('warm',WARMUP)}</div>
+  <div class="g c3 ent"><div class="card compact"><div class="ch"><span class="ct">Calentamiento · 10 min</span><span class="badge amber">${dn[wg]}/${tt[wg]}</span></div>
+  ${raw(wg,WARMUP)}</div>
  <div class="card"><div class="ch"><span class="ct">${w.title}</span><span class="badge">${done}/${tot} series</span></div>
   <div class="bar" style="margin-bottom:10px"><i style="width:${Math.round(done/tot*100)}%"></i></div>
   ${raw(g,w.ex)}
   ${!ro&&done===tot?`<div style="margin-top:14px"><button class="btn" style="width:100%" onclick="upd(d=>d.train='train');toast('💪 Entreno registrado')">Marcar “Entrené hoy”</button></div>`:''}</div>
- <div class="col"><div class="card compact"><div class="ch"><span class="ct">Cuello acostado</span><span class="badge">${dn.neck}/${tt.neck}</span></div>${raw('neck',NECK)}</div>
- ${ro&&!timesDone(d,'hipo',0)?'':`<div class="card compact hp">${raw('hipo',[HIPO])}</div>`}
+ <div class="col"><div class="card compact"><div class="ch"><span class="ct">Cuello acostado</span><span class="badge">${dn[ng]}/${tt[ng]}</span></div>${raw(ng,NECK)}</div>
+ ${ro&&!timesDone(d,hg,0)?'':`<div class="card compact hp">${raw(hg,[HIPO])}</div>`}
  <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span class="badge amber">${dn[sg]}/${tt[sg]}</span></div>${raw(sg,SL)}</div></div></div>`}
 function vEntreno(){return trainView(day(),exDay,false)}
 function trainDay(d){const c=[0,1,2].map(n=>({n,h:doneEntries(d).filter(x=>x.g==='d'+n).length})).filter(x=>x.h>0).sort((a,b)=>b.h-a.h);return c.length?c[0].n:null}
@@ -476,7 +489,7 @@ function stats(keys){const ds=keys.map(k=>db[k]).filter(Boolean),g=f=>ds.map(f).
  fasts:ds.filter(d=>d.fast.on).length,fastH:avg(ds.filter(d=>d.fast.on).map(d=>d.fast.h)),
  sweets:ds.reduce((s,d)=>s+d.sweets,0),prot:ds.length?ds.reduce((s,d)=>s+Object.values(d.prot).filter(Boolean).length,0)/(ds.length*4):null,
  score:avg(ds.map(score)),exs:ds.reduce((n,d)=>n+doneCount(d),0),sets:ds.reduce((n,d)=>n+doneSets(d),0)}}
-function doneEntries(d){return Object.keys(d.done||{}).map(k=>{const [g,i]=k.split(':'),list=g==='warm'?WARMUP:g==='neck'?NECK:g==='hipo'?[HIPO]:g[0]==='s'?STRETCH[+g.slice(1)]||[]:(WORKOUTS[+g.slice(1)]||{}).ex||[],e=list[+i];return e?{e,g,times:+d.done[k]}:null}).filter(Boolean)}
+function doneEntries(d){return Object.keys(d.done||{}).map(k=>{const [g,i]=k.split(':'),list=g.startsWith('warm')?WARMUP:g.startsWith('neck')?NECK:g.startsWith('hipo')?[HIPO]:g[0]==='s'?STRETCH[+g.slice(1)]||[]:(WORKOUTS[+g.slice(1)]||{}).ex||[],e=list[+i];return e?{e,g,times:+d.done[k]}:null}).filter(Boolean)}
 function doneCount(d){return doneEntries(d).reduce((n,x)=>n+x.times,0)}
 function doneSets(d){return doneEntries(d).reduce((n,x)=>n+x.times*x.e.sets,0)}
 function trend(c,p,lowerBetter,suffix=''){if(c==null||p==null)return '<div class="tr flat">sin comparación</div>';
@@ -585,7 +598,7 @@ async function syncAll(){if(!sb||!sbUser||busy)return;busy=true;syncSt='sync';pa
   let changed=false;
   const need=Object.keys(rm).filter(k=>rm[k]>((db[k]&&db[k]._u)||0)&&!dirty.has(k));
   if(need.length){const {data:rows,error:e2}=await sb.from('days').select('day,data,u').in('day',need);if(e2)throw e2;
-   rows.forEach(r=>{db[r.day]=Object.assign(r.data,{_u:+r.u});changed=true})}
+   rows.forEach(r=>{migGroups(r.data);db[r.day]=Object.assign(r.data,{_u:Math.max(+r.u,r.data._u||0)});changed=true})}
   Object.keys(db).forEach(k=>{if(!db[k]._u&&!(k in rm))db[k]._u=Date.now();if((db[k]._u||0)>(rm[k]||0))dirty.add(k)});
   const ks=[...dirty].filter(k=>db[k]);
   if(ks.length){const {error:e3}=await sb.from('days').upsert(ks.map(k=>({user_id:sbUser.id,day:k,data:db[k],u:db[k]._u})),{onConflict:'user_id,day'});if(e3)throw e3}
