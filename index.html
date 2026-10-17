@@ -219,6 +219,43 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .abox input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit;margin-bottom:8px}
 .arow{display:flex;gap:8px;margin-top:6px}.arow .btn{flex:1}.aerr{font-size:12px;color:var(--red);margin-top:8px;min-height:14px}
 .compact .dn{margin-left:5px;padding:0 6px}
+.tm{gap:12px;flex-wrap:wrap}.tm .tc{display:flex;flex-direction:column;align-items:center;min-width:76px;padding:2px 8px;border-radius:10px;border:1.5px solid transparent}
+.tm .tc small{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.tm .tc b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.tm .tc.cur{border-color:var(--brand2);background:var(--brand-bg)}.tm .tc.run b{color:var(--brand)}.tm .tc.fin small:after{content:' ✓';color:var(--brand2)}
+.tm .tc.tot{border-left:1.5px solid var(--line);border-radius:0;padding-left:12px}
+.win{display:none;position:fixed;inset:0;z-index:120;background:rgba(20,14,0,.72);align-items:center;justify-content:center;padding:16px;overflow:hidden;cursor:pointer}.win.show{display:flex}
+.wbox{position:relative;text-align:center;background:radial-gradient(circle at 50% 0,#3b2a00,#150f00 70%);border:3px solid #F5C518;border-radius:26px;padding:22px 30px 18px;max-width:min(94vw,420px);box-shadow:0 0 60px rgba(245,197,24,.55),inset 0 0 30px rgba(245,197,24,.15);animation:pop .55s cubic-bezier(.2,1.4,.4,1)}
+.medal{width:150px;height:auto;filter:drop-shadow(0 6px 14px rgba(245,197,24,.55));animation:bob 2.2s ease-in-out infinite}
+.wt{font-size:30px;font-weight:900;line-height:1.05;letter-spacing:.02em;margin-top:6px;background:linear-gradient(180deg,#FFF3B0,#F5C518 55%,#B8860B);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.ws{color:#FFE9A0;font-size:14px;font-weight:600;margin-top:8px}
+.wtm{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}.wtm div{background:rgba(245,197,24,.14);border:1px solid rgba(245,197,24,.5);border-radius:10px;padding:5px 10px}
+.wtm small{display:block;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#E8C75A}.wtm b{font-size:16px;color:#FFF3B0;font-variant-numeric:tabular-nums}
+.wtm .tt{background:#F5C518}.wtm .tt small,.wtm .tt b{color:#3b2a00}
+.wh{margin-top:12px;font-size:11px;color:#B8993A}
+.conf{position:absolute;inset:0;pointer-events:none;overflow:hidden}.conf i{position:absolute;top:-14px;width:9px;height:15px;border-radius:2px;animation:fall linear infinite}
+@keyframes fall{to{top:104%;margin-left:30px}}@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}@keyframes bob{50%{transform:translateY(-6px)}}
+@media(min-width:900px){
+ body.fit{height:100vh;height:100dvh;overflow:hidden;padding-bottom:0}
+ body.fit .app{height:100%;display:flex;flex-direction:column}
+ body.fit .panel{flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 16px 36px}
+ body.fit .toprow{flex:0 0 auto;flex-wrap:wrap;margin-bottom:8px}
+ body.fit .g.ent{flex:1;min-height:0;margin-bottom:0;display:grid;grid-template-columns:1fr 2fr 1fr;grid-template-rows:minmax(0,1fr);align-items:stretch;gap:10px;--k:1}
+ body.fit .g.ent>.card,body.fit .g.ent>.col{min-height:0;overflow:hidden}
+ body.fit .g.ent>.col{gap:8px}
+ body.fit .g.ent .card{padding:10px 12px}
+ body.fit .ent .compact{font-size:calc(12.5px*var(--k))}
+ body.fit .ent>.card:not(.compact){font-size:calc(14px*var(--k))}
+ body.fit .ent .ex{padding:.32em 0}
+ body.fit .ent .ex-name{font-size:1.02em}body.fit .ent .ex-ser{font-size:.88em}
+ body.fit .ent .ex-desc{font-size:.8em;line-height:1.28}
+ body.fit .ent .thumbs img{width:3.1em;height:3.1em}
+ body.fit .ent .sc{width:2.1em;height:2.1em;font-size:1em}
+ body.fit .ent .cb{width:1.6em;height:1.6em}
+ body.fit .ent .ch{margin-bottom:.4em}
+ body.fit .ent .ct{font-size:.85em}
+ body.fit .cloud{bottom:6px;right:8px}
+}
 </style>
 </head>
 <body>
@@ -234,6 +271,13 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 <button class="cloud off" id="cloud" onclick="cloudClick()">☁ Iniciar sesión</button>
 <div class="am" id="am" onclick="if(event.target===this)closeAuth()"><div class="abox"></div></div>
 <div class="lb" id="lb" onclick="this.classList.remove('show')"><img id="lbimg" alt=""></div>
+<div class="win" id="win" onclick="closeWin()"><div class="conf" id="conf"></div><div class="wbox">
+<svg viewBox="0 0 220 250" class="medal" aria-hidden="true"><defs><linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3B0"/><stop offset=".45" stop-color="#F5C518"/><stop offset="1" stop-color="#B8860B"/></linearGradient><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E0A800"/><stop offset="1" stop-color="#8A6508"/></linearGradient></defs>
+<path d="M60 4h38l28 92H86z" fill="url(#gr)"/><path d="M122 4h38l-28 92h-38z" fill="#F5C518" opacity=".9"/>
+<circle cx="110" cy="152" r="84" fill="url(#gd)" stroke="#8A6508" stroke-width="5"/><circle cx="110" cy="152" r="68" fill="none" stroke="#FFF3B0" stroke-width="4" stroke-dasharray="3 7"/>
+<path d="M110 100l15 31 34 5-25 24 6 34-30-17-30 17 6-34-25-24 34-5z" fill="#fff8d6" stroke="#8A6508" stroke-width="3" stroke-linejoin="round"/></svg>
+<div class="wt">¡ENTRENAMIENTO<br>TERMINADO!</div><div class="ws">Un día más completado. ¡Seguí así! 💪</div><div class="wtm" id="wint"></div><div class="wh">Tocá para cerrar</div></div></div>
+
 <input type="file" id="imp" accept="application/json" style="display:none">
 
 <script>
@@ -251,7 +295,7 @@ const num=v=>(v===''||v==null||isNaN(+v))?null:+v;
 
 function newDay(){return{neck:null,back:null,energy:null,sleep:7,prot:{des:false,alm:false,mer:false,cen:false},
  fast:{on:false,h:14},sweets:0,sweetsPlanned:false,train:null,habits:{respiro:false,camine:false,levante:false,micro:false},
- meals:{des:'',alm:'',mer:'',cen:''},snacks:[],note:'',wk:{},sess:null,tm:{},last:null,lastEx:null}}
+ meals:{des:'',alm:'',mer:'',cen:''},snacks:[],note:'',wk:{},sess:null,ph:null,tm:{},last:null,lastEx:null}}
 function migrate(o){const m=o.metrics||{},c=o.checks||{},d=newDay();
  d.neck=num(m.cuello);d.back=num(m.espalda);d.energy=num(m.energia);d.sleep=num(m.sueno);
  if(c.proteina)MEALS.forEach(x=>d.prot[x[0]]=true);
@@ -358,29 +402,32 @@ const WARMUP=[
  ex('Bisagra de cadera','10 reps','De pie con el palo de escoba pegado a la espalda: tiene que tocar cabeza, espalda alta y cola. Con las rodillas apenas flexionadas, llevá la cola hacia atrás e inclinate hacia adelante sin despegar el palo. Volvé empujando la cadera al frente. Se dobla la cadera, no la espalda.',T('bisagra')),
  ex('Marcha en el lugar','1 minuto','De pie, levantá las rodillas de a una como marchando sin avanzar, moviendo los brazos al ritmo. Suave: solo para activar la circulación y entrar en calor.',T('marcha')),
  ex('Puente de glúteo suave','8 reps','Acostado boca arriba con rodillas flexionadas y pies apoyados. Subí la cadera apretando los glúteos hasta formar una línea recta de hombros a rodillas. Bajá despacio. No arquees la espalda baja.',T('puente'))];
-const PRESS=ex('Press inclinado (pared o mesa)','2 series × 8-10 reps','Apoyá las manos en la pared o en una mesa firme a la altura del pecho y alejá los pies hasta quedar inclinado, en línea recta de cabeza a talones. Doblá los codos acercando el pecho al apoyo y empujá para volver. Es una flexión de brazos suave. No adelantes la cabeza.',T('press'));
+const PRESS=(se,re)=>ex('Press inclinado (pared o mesa)',se+' series × '+re+' reps','Apoyá las manos en la pared o en una mesa firme a la altura del pecho y alejá los pies hasta quedar inclinado, en línea recta de cabeza a talones. Doblá los codos acercando el pecho al apoyo y empujá para volver. Es una flexión de brazos suave. No adelantes la cabeza.',T('press'));
+const ABS=ex('Abdominales superiores con piernas levantadas','2 series × 20 reps','Acostado boca arriba con las piernas levantadas y apoyadas sobre una silla (cadera y rodillas a 90°). Manos cruzadas sobre el pecho o suaves detrás de la cabeza, sin tirar del cuello. Subí solo los hombros y la parte alta de la espalda llevando las costillas hacia la cadera, exhalando al subir; bajá controlado. La espalda baja queda pegada al piso.',[]);
 const WORKOUTS=[
 {title:'Día 1 — Base total body A',ex:[
- ex('Sentadilla','2 series × 8 reps','De pie con los pies al ancho de los hombros. Llevá la cadera hacia atrás y abajo, como si te fueras a sentar, con las rodillas siguiendo la dirección de los pies y el pecho erguido. Bajá hasta donde controles y subí empujando el piso. Cuando esté fácil, hacela más lenta o con la pesa rusa contra el pecho.',T('sentadilla')),
- ex('Remo con banda','3 series × 10-12 reps','Con la banda enganchada a un punto fijo frente a vos, agarrá las manijas con los brazos estirados. Tirá hacia el abdomen llevando los codos hacia atrás, pegados al cuerpo, juntando los omóplatos, y volvé lento. Hombros abajo, sin encoger el cuello.',T('remo_banda')),
- PRESS,
+ ex('Sentadilla','3 series × 8 reps','De pie con los pies al ancho de los hombros. Llevá la cadera hacia atrás y abajo, como si te fueras a sentar, con las rodillas siguiendo la dirección de los pies y el pecho erguido. Bajá hasta donde controles y subí empujando el piso. Cuando esté fácil, hacela más lenta o con la pesa rusa contra el pecho.',T('sentadilla')),
+ ex('Remo con banda','3 series × 12 reps','Con la banda enganchada a un punto fijo frente a vos, agarrá las manijas con los brazos estirados. Tirá hacia el abdomen llevando los codos hacia atrás, pegados al cuerpo, juntando los omóplatos, y volvé lento. Hombros abajo, sin encoger el cuello.',T('remo_banda')),
+ PRESS(3,10),
  ex('Puente de glúteo','3 series × 10 reps · sin peso','Acostado boca arriba con rodillas flexionadas y pies apoyados. Subí la cadera apretando los glúteos hasta que hombros, cadera y rodillas queden en línea. Bajá controlado sin golpear el piso. No arquees la espalda baja.',T('puente')),
- ex('Pallof press con banda','2 series × 8 reps por lado','Con la banda enganchada a un costado a la altura del pecho, parate de lado a ella y agarrá la manija con ambas manos frente al pecho. Estirá los brazos hacia adelante y volvé. La banda te tira hacia el costado: tu trabajo es NO girar el torso. Abdomen firme, cadera quieta.',T('pallof')),
+ ex('Pallof press con banda','3 series × 10 reps por lado','Con la banda enganchada a un costado a la altura del pecho, parate de lado a ella y agarrá la manija con ambas manos frente al pecho. Estirá los brazos hacia adelante y volvé. La banda te tira hacia el costado: tu trabajo es NO girar el torso. Abdomen firme, cadera quieta.',T('pallof')),
+ ABS,
  ex('Escalón: subir y bajar (caminata final)','5-10 minutos','Subí y bajá un escalón o una escalera baja, alternando 1-2 minutos de escalón con 1 minuto de pasos tranquilos hasta completar 5-10 minutos. Apoyá todo el pie, empujá con la pierna que sube y bajá controlado. Es más exigente para glúteo y pierna. Si molesta la rodilla o la ingle, bajá el ritmo.',[])]},
 {title:'Día 2 — Espalda, control y core',ex:[
- ex('Peso muerto rumano','2 series × 8 reps','De pie, con la pesa rusa en las manos y las rodillas apenas flexionadas. Llevá la cadera hacia atrás e inclinate con la espalda recta, deslizando la pesa cerca de las piernas hasta sentir estiramiento atrás del muslo. Volvé apretando los glúteos. No es agacharse: es hacer bisagra de cadera.',T('peso_muerto')),
- ex('Tirón vertical (jalón / dominada)','3 series · 4-8 reps con dominada, 8-12 con banda','Con banda: enganchala arriba y tirá hacia el pecho llevando los codos abajo y atrás. Con barra: colgate y subí llevando el pecho hacia la barra; si cuesta, hacé solo la bajada lenta (3-5 seg). Hombros abajo, sin encoger el cuello.',T('jalon')),
- ex('Split squat','2 series × 6 reps por pierna','Ponete en posición de zancada: una pierna adelante y la otra atrás, con los pies separados como para un paso largo. Bajá la rodilla de atrás hacia el piso en línea recta y subí, sin mover los pies. Recorrido corto y controlado. Si molesta la ingle, bajá menos.',T('split')),
- ex('Face pull con banda','2 series × 12 reps','Con la banda enganchada frente a vos a la altura de la cara, tirá hacia tu cara abriendo los codos hacia los costados y separando las manos. Hombros atrás y abajo. Sirve para compensar las horas de PC.',T('facepull')),
- ex('Dead bug suave','2 series × 6 reps por lado','Acostado boca arriba, brazos al techo y rodillas flexionadas a 90° sobre la cadera. Bajá despacio un brazo por encima de la cabeza y estirá la pierna contraria sin apoyarla; volvé y alternás. La espalda baja siempre pegada al piso. Si molesta, hacé menos recorrido.',T('deadbug')),
-]},
+ ex('Peso muerto rumano','2 series × 10 reps','De pie, con la pesa rusa en las manos y las rodillas apenas flexionadas. Llevá la cadera hacia atrás e inclinate con la espalda recta, deslizando la pesa cerca de las piernas hasta sentir estiramiento atrás del muslo. Volvé apretando los glúteos. No es agacharse: es hacer bisagra de cadera.',T('peso_muerto')),
+ ex('Dominada con banda','3 series × 6 reps','Colgate de la barra con una banda elástica enganchada a la barra y pasada por debajo de una rodilla o de un pie, para que te ayude a subir. Subí llevando el pecho hacia la barra con los codos abajo y atrás, y bajá lento (3-5 seg). Hombros abajo, sin encoger el cuello.',T('jalon')),
+ ex('Split squat con 2 pesas rusas de 5 kg','2 series × 8 reps por pierna','Ponete en posición de zancada con una pesa rusa de 5 kg en cada mano, brazos estirados a los costados: una pierna adelante y la otra atrás, con los pies separados como para un paso largo. Bajá la rodilla de atrás hacia el piso en línea recta y subí, sin mover los pies. Recorrido corto y controlado. Si molesta la ingle, bajá menos.',T('split')),
+ ex('Face pull con banda','3 series × 10 reps','Con la banda enganchada frente a vos a la altura de la cara, tirá hacia tu cara abriendo los codos hacia los costados y separando las manos. Hombros atrás y abajo. Sirve para compensar las horas de PC.',T('facepull')),
+ ex('Dead bug suave','3 series × 6 reps por lado','Acostado boca arriba, brazos al techo y rodillas flexionadas a 90° sobre la cadera. Bajá despacio un brazo por encima de la cabeza y estirá la pierna contraria sin apoyarla; volvé y alternás. La espalda baja siempre pegada al piso. Si molesta, hacé menos recorrido.',T('deadbug')),
+ ABS]},
 {title:'Día 3 — Base total body B',ex:[
- ex('Sentadilla goblet','2 series × 8 reps','Sostené la pesa rusa contra el pecho con ambas manos. Hacé una sentadilla: cadera atrás y abajo, codos por dentro de las rodillas, pecho erguido. Subí sin impulso. Si el peso te descoordina, hacela sin pesa.',T('goblet')),
- ex('Remo a una mano','2 series × 8 reps por lado','Inclinate con la espalda recta y apoyá una mano en una superficie firme (mesa o tu propio muslo). Con la otra mano tirá la pesa rusa hacia la cadera, con el codo pegado al cuerpo, y bajala lento. El hombro no sube hacia la oreja. Si la pesa es mucha, usá la banda.',T('remo_mano')),
- ex('Press inclinado','2 series × 8 reps','Igual que el Día 1: manos en la pared o en una mesa firme, cuerpo en línea recta e inclinado. Bajá el pecho controlado y empujá para volver, sin adelantar la cabeza.',T('press')),
+ ex('Sentadilla goblet','3 series × 6 reps','Sostené la pesa rusa contra el pecho con ambas manos. Hacé una sentadilla: cadera atrás y abajo, codos por dentro de las rodillas, pecho erguido. Subí sin impulso. Si el peso te descoordina, hacela sin pesa.',T('goblet')),
+ ex('Remo a una mano','3 series × 8 reps por lado','Inclinate con la espalda recta y apoyá una mano en una superficie firme (mesa o tu propio muslo). Con la otra mano tirá la pesa rusa hacia la cadera, con el codo pegado al cuerpo, y bajala lento. El hombro no sube hacia la oreja. Si la pesa es mucha, usá la banda.',T('remo_mano')),
+ ex('Press inclinado','3 series × 8 reps','Igual que el Día 1: manos en la pared o en una mesa firme, cuerpo en línea recta e inclinado. Bajá el pecho controlado y empujá para volver, sin adelantar la cabeza.',T('press')),
  ex('Puente de glúteo con pausa','3 series × 8 reps · sin peso','Igual que el puente normal, pero arriba sostené 2 segundos apretando los glúteos antes de bajar. El esfuerzo extra lo hace la pausa, no el peso.',T('puente')),
- ex('Bird dog corto','2 series × 6 reps por lado','En cuatro apoyos (manos bajo los hombros, rodillas bajo la cadera), estirá un brazo hacia adelante y la pierna contraria hacia atrás, solo hasta donde la espalda se mantenga quieta y plana. Volvé y cambiá de lado. No arquees la espalda ni levantes mucho la cabeza.',T('birddog')),
- ex('Carry unilateral con pesa rusa','2 vueltas por lado · 20-30 seg por lado','Agarrá la pesa rusa con una sola mano a un costado, ponete bien derecho y caminá. El cuerpo tiende a inclinarse hacia el lado del peso: resistilo, mantené los hombros y la cadera parejos. Descansá y cambiá de mano. Trabaja abdomen, postura y estabilidad.',T('carry'))]}];
+ ex('Bird dog corto','3 series × 6 reps por lado','En cuatro apoyos (manos bajo los hombros, rodillas bajo la cadera), estirá un brazo hacia adelante y la pierna contraria hacia atrás, solo hasta donde la espalda se mantenga quieta y plana. Volvé y cambiá de lado. No arquees la espalda ni levantes mucho la cabeza.',T('birddog')),
+ ex('Carry unilateral con pesa rusa','3 vueltas por lado · 20-30 seg por lado','Agarrá la pesa rusa con una sola mano a un costado, ponete bien derecho y caminá. El cuerpo tiende a inclinarse hacia el lado del peso: resistilo, mantené los hombros y la cadera parejos. Descansá y cambiá de mano. Trabaja abdomen, postura y estabilidad.',T('carry')),
+ ABS]}];
 
 
 const NECK=[
@@ -393,7 +440,7 @@ const ST_PSOAS=ex('Flexor de cadera (psoas)','20-30 seg por lado','Acostado en e
 const ST_BARRA=ex('Colgado en barra','30 segundos','Colgate de la barra de dominadas con las manos un poco más abiertas que los hombros y los brazos estirados. Si querés descargar peso, apoyá los pies en el piso o en una silla. Dejá caer el cuerpo con los hombros relajados (sin encogerlos) y respirá lento. Estira dorsales y hombros y descomprime la columna. Si duele el cuello o el hombro, soltá.',T('barra'));
 const ST_DORSAL=ex('Dorsal y costado (brazo arriba)','20 seg por lado','De pie, subí un brazo por encima de la cabeza y, con la otra mano, inclinate hacia el lado contrario hasta sentir el estiramiento en el costado del tronco. Respirá hacia el lado que se abre.',SE('dorsal','Brazo izquierdo','Brazo derecho'));
 const ST_RESP=ex('Respiración profunda acostado','5 respiraciones lentas','Boca arriba, una mano en el pecho y otra en la panza. Inhalá por la nariz llevando el aire a la panza y exhalá lento por la boca. Cierra la sesión bajando pulsaciones y tensión.',T('respiracion'));
-const HIPO=ex('Hipopresivos','opcional','Opcional. Exhalá todo el aire por la boca, sostené sin inspirar y llevá el ombligo hacia adentro y arriba sin forzar; después soltá e inhalá. Frená si hay mareo, ardor o dolor (con tus antecedentes digestivos y de ingle, consultalo con tu médico).',[]);
+const HIPO=ex('Hipopresivos','1 vez','Exhalá todo el aire por la boca, sostené sin inspirar y llevá el ombligo hacia adentro y arriba sin forzar; después soltá e inhalá. Frená si hay mareo, ardor o dolor (con tus antecedentes digestivos y de ingle, consultalo con tu médico).',[]);
 const STRETCH=[
  [ST_PECHO,ST_PSOAS,ST_GLUTEO,ST_BARRA,ST_DORSAL,ST_RESP],
  [ST_ISQUIOS,ST_GLUTEO,ST_PECHO,ST_BARRA,ST_PSOAS,ST_RESP],
@@ -406,22 +453,35 @@ const DAY_EQ=[
 function equipCard(){return `<div class="card eq"><div class="ct">Qué necesitás hoy</div><div class="eq-list">${DAY_EQ[exDay].map(x=>`<figure><img src="${IMG['eq_'+x[0]]}" alt="${EQ[x[0]]}" onclick="zoom('eq_${x[0]}')"><figcaption>${EQ[x[0]]}${x[1]?'<br><i>opcional</i>':''}</figcaption></figure>`).join('')}</div></div>`}
 /* ---------- timers ---------- */
 const fmt=ms=>{ms=Math.max(0,Math.round(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),r=ms%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(r).padStart(2,'0')};
-function running(d){const s=d&&d.sess;return !!s&&!s.end&&!s.pa}
-function sessMs(d,k){const s=d&&d.sess;if(!s)return 0;const stale=!s.end&&(k||cur)!==todayKey(),now=Date.now(),e=s.end||(stale?(d.last||s.start):now);
+const PH=['w','t','x'],PHN={w:'Calentamiento',t:'Entrenamiento',x:'Estiramiento'};
+function running(d){const h=d&&d.ph;return !!h&&PH.includes(h.cur)&&!!h.since}
+function phMs(d,p,k){const h=d&&d.ph;if(!h)return 0;let v=(h.a&&h.a[p])||0;
+ if(h.cur===p&&h.since){const stale=(k||cur)!==todayKey(),e=stale?(d.last||h.since):Date.now();v+=Math.max(0,e-h.since)}return v}
+function sessMs(d,k){if(d&&d.ph)return PH.reduce((t,p)=>t+phMs(d,p,k),0);
+ const s=d&&d.sess;if(!s)return 0;const stale=!s.end&&(k||cur)!==todayKey(),now=Date.now(),e=s.end||(stale?(d.last||s.start):now);
  return e-s.start-(s.pt||0)-(s.pa&&!stale?now-s.pa:0)}
-function sessStart(){upd(d=>{const n=Date.now();d.sess={start:n,end:null,pt:0,pa:null};d.last=n;d.lastEx=null})}
-function sessPause(){upd(d=>{const s=d.sess,n=Date.now();if(!s||s.end)return;if(s.pa){const g=n-s.pa;s.pt+=g;if(d.last)d.last+=g;s.pa=null}else s.pa=n})}
-function sessEnd(){upd(d=>{const s=d.sess,n=Date.now();if(!s)return;if(s.pa){s.pt+=n-s.pa;s.pa=null}s.end=n});toast('Entreno terminado ✓')}
-function sessResume(){upd(d=>{const s=d.sess,n=Date.now();if(!s)return;s.pt+=n-s.end;s.end=null;d.last=n})}
-function timerCard(d){const live=cur===todayKey(),s=d.sess,st=!s?0:s.end?3:s.pa?2:1;
+function phDone(d,n,p){const L=p==='w'?[['warm'+n,WARMUP]]:p==='t'?[['d'+n,WORKOUTS[n].ex],['neck'+n,NECK],['hipo'+n,[HIPO]]]:[['s'+n,STRETCH[n]]];
+ return L.every(([g,l])=>l.every((e,i)=>timesDone(d,g,i)>0))}
+function phSet(d,p,now){const h=d.ph;if(h.cur&&PH.includes(h.cur)&&h.since)h.a[h.cur]=(h.a[h.cur]||0)+(now-h.since);h.cur=p;h.pa=null;h.since=p==='end'?null:now}
+function phAdvance(d,n){const h=d.ph;if(!h||h.cur==='end')return false;const now=Date.now(),nx=PH.find(p=>!phDone(d,n,p));
+ if(!nx){phSet(d,'end',now);d.train='train';return true}
+ if(nx!==h.cur&&!h.pa)phSet(d,nx,now);return false}
+function sessStart(){upd(d=>{const n=Date.now();d.sess=null;d.ph={cur:'w',a:{w:0,t:0,x:0},since:n,pa:null};d.last=n;d.lastEx=null;phAdvance(d,exDay)})}
+function sessPause(){upd(d=>{const h=d.ph,n=Date.now();if(!h||!PH.includes(h.cur))return;
+ if(h.pa){const g=n-h.pa;if(d.last)d.last+=g;h.since=n;h.pa=null}else{h.a[h.cur]=(h.a[h.cur]||0)+(n-h.since);h.since=null;h.pa=n}})}
+function sessEnd(){upd(d=>{const h=d.ph;if(!h)return;phSet(d,'end',Date.now())});toast('Entreno terminado ✓')}
+function sessResume(){upd(d=>{const h=d.ph,n=Date.now();if(!h)return;phSet(d,PH.find(p=>!phDone(d,exDay,p))||'x',n);d.last=n})}
+function timerCard(d){const live=cur===todayKey(),h=d.ph,st=!h?0:h.cur==='end'?3:h.pa?2:1;
+ const cell=p=>`<div class="tc${h&&h.cur===p?' cur':''}${h&&h.cur===p&&st===1?' run':''}${h&&phDone(d,exDay,p)?' fin':''}"><small>${PHN[p]}</small><b id="ph_${p}">${fmt(phMs(d,p,cur))}</b></div>`;
  const b=!live?'':st===0?'<button class="tbn" onclick="sessStart()">▶ Iniciar</button>':st===3?'<button class="tbn" onclick="sessResume()">▶ Reanudar</button>':`<button class="tbn" title="${st===2?'Seguir':'Pausa'}" onclick="sessPause()">${st===2?'▶':'⏸'}</button><button class="tbn" title="Terminar entreno" onclick="sessEnd()">■</button>`;
- const rs=live&&(s||Object.keys(d.done||{}).length)?'<button class="tbn" title="Borrar el progreso de entreno de hoy" onclick="resetToday()">↺</button>':'';
- return `<div class="card tm"><span class="ct">⏱ Entreno</span><span class="tv${st===1?' run':''}" id="sessT">${fmt(sessMs(d,cur))}</span>${b}${rs}</div>`}
+ const rs=live&&(h||Object.keys(d.done||{}).length)?'<button class="tbn" title="Borrar el progreso de entreno de hoy" onclick="resetToday()">↺</button>':'';
+ return `<div class="card tm">${PH.map(cell).join('')}<div class="tc tot"><small>Total</small><b id="sessT">${fmt(sessMs(d,cur))}</b></div>${b}${rs}</div>`}
 function resetToday(){if(!confirm('¿Borrar todo el progreso de entreno de hoy (series, tiempos y cronómetro)?'))return;
- upd(d=>{d.wk={};d.done={};d.tm={};d.sess=null;d.last=null;d.lastEx=null;if(d.train==='train')d.train=null});toast('Entreno de hoy reiniciado')}
+ upd(d=>{d.wk={};d.done={};d.tm={};d.sess=null;d.ph=null;d.last=null;d.lastEx=null;if(d.train==='train')d.train=null});toast('Entreno de hoy reiniciado')}
 function tick(){const t=todayKey(),d=db[t];
  if(t!==lastToday){const was=cur===lastToday;lastToday=t;if(was){cur=t;exDay=suggestDay()}render();return}
  const el=document.getElementById('sessT');if(el&&cur===t)el.textContent=fmt(sessMs(d,t));
+ PH.forEach(p=>{const e2=document.getElementById('ph_'+p);if(e2&&cur===t)e2.textContent=fmt(phMs(d,p,t))});
  document.querySelectorAll('.lr').forEach(x=>{if(d&&d.last&&running(d))x.textContent='descanso '+fmt(Date.now()-d.last)})}
 setInterval(tick,1000);document.addEventListener('visibilitychange',tick);
 /* ---------- qué día toca ---------- */
@@ -444,12 +504,13 @@ function exItem(e,group,i,count,times,ro,tm,lr){
  return `<div class="ex${ro&&!was?' skipped':''}"><div class="ex-top"${ro?'':` onclick="tapEx('${group}',${i},${e.sets})"`}><div class="sc ${ro?(was?'on':''):part?'part':was?'was':''}"${ro?'':' title="Tocá para descontar una serie"'}>${circ}</div>
   <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div>${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}${isTip(group)?'':`<div class="ex-desc">${e.desc}</div>`}</div>
   <div class="thumbs">${th}</div>${isTip(group)?`<span class="iw"><button class="info" onclick="event.stopPropagation();this.classList.toggle('open')" onmouseleave="this.classList.remove('open')">i</button><div class="tip"><b>${e.name}</b><br>${e.desc}</div></span>`:''}</div></div>`}
-function tapEx(g,i,sets){let fin=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.done=d.done||{};let v=d.wk[g][i];v=v===true?sets:(+v||0);
+function tapEx(g,i,sets){let fin=false,won=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.done=d.done||{};let v=d.wk[g][i];v=v===true?sets:(+v||0);
  if(cur===todayKey()){const now=Date.now();
-  if(!d.sess){d.sess={start:now,end:null,pt:0,pa:null};d.last=now}
+  if(!d.ph){d.sess=null;d.ph={cur:'w',a:{w:0,t:0,x:0},since:now,pa:null};d.last=now}
   if(running(d)){d.tm=d.tm||{};const k=g+':'+i,t=d.tm[k]=d.tm[k]||{t:0,s:[]},iv=now-(d.last||now);t.t+=iv;t.s.push(iv);d.last=now;d.lastEx=k}}
- if(v+1>=sets){d.wk[g][i]=0;d.done[g+':'+i]=(+d.done[g+':'+i]||0)+1;fin=true}else d.wk[g][i]=v+1});
- if(fin)toast('✓ Ejercicio guardado en el historial')}
+ if(v+1>=sets){d.wk[g][i]=0;d.done[g+':'+i]=(+d.done[g+':'+i]||0)+1;fin=true}else d.wk[g][i]=v+1;
+ if(fin){const n=+g.replace(/\D/g,'');if(d.ph&&cur===todayKey()){if(phAdvance(d,n))won=true}else if(PH.every(p=>phDone(d,n,p)))d.train='train'}});
+ if(won)celebrate();else if(fin)toast('✓ Ejercicio guardado en el historial')}
 function undoEx(g,i){upd(d=>{d.done=d.done||{};const k=g+':'+i,n=(+d.done[k]||0)-1;if(n>0)d.done[k]=n;else delete d.done[k];if(d.wk[g])d.wk[g][i]=0})}
 function zoom(k){document.getElementById('lbimg').src=IMG[k];document.getElementById('lb').classList.add('show')}
 function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+dayIdx,SL=STRETCH[dayIdx];
@@ -462,7 +523,7 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
  const raw=(grp,list)=>list.map((e,i)=>exItem(e,grp,i,setsDone(d,grp,i,e),timesDone(d,grp,i),ro,(d.tm||{})[grp+':'+i],!ro&&d.lastEx===grp+':'+i&&running(d))).join('');
  const tot=tt[g],done=dn[g];
  const cs=cycleState(),live=cur===todayKey(),tdy=db[todayKey()];
- const top=ro?`<div class="toprow"><div class="card eq"><div class="ct">Entreno: Día ${dayIdx+1} — ${w.title.split('—')[1].trim()}${d.sess&&sessMs(d,showTrain)>0?' · ⏱ '+fmt(sessMs(d,showTrain)):''}</div></div>${prog}</div>`
+ const top=ro?`<div class="toprow"><div class="card eq"><div class="ct">Entreno: Día ${dayIdx+1} — ${w.title.split('—')[1].trim()}${(d.sess||d.ph)&&sessMs(d,showTrain)>0?' · ⏱ '+fmt(sessMs(d,showTrain))+(d.ph?' ('+PH.map(p=>PHN[p]+' '+fmt(phMs(d,p,showTrain))).join(' · ')+')':''):''}</div></div>${prog}</div>`
   :`<div class="toprow"><div class="dtabs">${WORKOUTS.map((x,i)=>`<button class="${i===dayIdx?'on':''}" onclick="exDay=${i};render()">${cs.marks.has(i)?'<span class="ck">✓</span>':''}${live&&i===suggestDay()&&!(tdy&&dayDone(tdy,i))?'<span class="hy">HOY TOCA</span>':''}Día ${i+1}<small>${['Total A','Espalda','Total B'][i]}</small></button>`).join('')}</div>${equipCard()}${timerCard(d)}${prog}</div>`;
  return `${top}
   <div class="g c3 ent"><div class="card compact"><div class="ch"><span class="ct">Calentamiento · 10 min</span><span class="badge amber">${dn[wg]}/${tt[wg]}</span></div>
@@ -470,7 +531,7 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
  <div class="card"><div class="ch"><span class="ct">${w.title}</span><span class="badge">${done}/${tot} series</span></div>
   <div class="bar" style="margin-bottom:10px"><i style="width:${Math.round(done/tot*100)}%"></i></div>
   ${raw(g,w.ex)}
-  ${!ro&&done===tot?`<div style="margin-top:14px"><button class="btn" style="width:100%" onclick="upd(d=>d.train='train');toast('💪 Entreno registrado')">Marcar “Entrené hoy”</button></div>`:''}</div>
+  </div>
  <div class="col"><div class="card compact"><div class="ch"><span class="ct">Cuello acostado</span><span class="badge">${dn[ng]}/${tt[ng]}</span></div>${raw(ng,NECK)}</div>
  ${ro&&!timesDone(d,hg,0)?'':`<div class="card compact hp">${raw(hg,[HIPO])}</div>`}
  <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span class="badge amber">${dn[sg]}/${tt[sg]}</span></div>${raw(sg,SL)}</div></div></div>`}
@@ -547,7 +608,7 @@ function shiftMonth(n){const [y,m]=calMonth.split('-').map(Number),d=new Date(y,
 function dayDetail(k){const d=db[k],dt=fromKey(k),lab=DAYS[dt.getDay()]+' '+dt.getDate()+' de '+MONTHS[dt.getMonth()];
  if(!d)return `<div class="card"><div class="ct">${lab}</div><div class="empty">Sin registro este día.</div><button class="btn ghost" style="width:100%" onclick="goDay('${k}','hoy')">Cargar este día</button></div>`;
  const tg=[];if(d.train==='train')tg.push('<span class="tag g">💪 Entrenó</span>');if(d.train==='rest')tg.push('<span class="tag">😴 Descanso</span>');
- if(d.habits.camine)tg.push('<span class="tag b">🚶 Caminó</span>');if(d.sess&&sessMs(d,k)>60000)tg.push('<span class="tag b">⏱ '+fmt(sessMs(d,k))+'</span>');if(d.habits.respiro)tg.push('<span class="tag">🌬️ Respiraciones</span>');
+ if(d.habits.camine)tg.push('<span class="tag b">🚶 Caminó</span>');if((d.sess||d.ph)&&sessMs(d,k)>60000)tg.push('<span class="tag b">⏱ '+(d.ph?PH.map(p=>PHN[p].slice(0,5)+'. '+fmt(phMs(d,p,k))).join(' · '):fmt(sessMs(d,k)))+'</span>');if(d.habits.respiro)tg.push('<span class="tag">🌬️ Respiraciones</span>');
  if(d.habits.levante)tg.push('<span class="tag">🖥️ Se levantó</span>');if(d.habits.micro)tg.push('<span class="tag">🤸 Micropausas</span>');
  if(d.fast.on)tg.push(`<span class="tag a">⏳ Ayuno ${d.fast.h} hs</span>`);
  tg.push(`<span class="tag ${d.sweets?'a':'g'}">🍫 ${d.sweets} dulce(s)${d.sweetsPlanned?' · planificado':''}</span>`);
@@ -645,7 +706,27 @@ function render(){
    <button class="ib" onclick="cur=addDays(cur,1);render()" ${cur>=todayKey()?'disabled style="opacity:.35"':''}>›</button>`}
  else dn.style.display='none';
  const v={hoy:vHoy,comidas:vComidas,entreno:vEntreno,progreso:vProgreso,historial:vHistorial}[tab];
- const sy=window.scrollY;document.getElementById('view').innerHTML=v();window.scrollTo(0,sy)}
+ document.body.classList.toggle('fit',tab==='entreno');
+ const sy=window.scrollY;document.getElementById('view').innerHTML=v();window.scrollTo(0,sy);fitEnt()}
+/* ---------- entreno a pantalla completa ---------- */
+function fitEnt(){const g=document.querySelector('body.fit .g.ent');if(!g||innerWidth<900)return;
+ const cols=[...g.children];let k=1.35;g.style.setProperty('--k',k);
+ const over=()=>cols.some(c=>c.scrollHeight>c.clientHeight+1);
+ while(over()&&k>0.5){k=Math.round((k-0.03)*100)/100;g.style.setProperty('--k',k)}}
+window.addEventListener('resize',fitEnt);
+/* ---------- popup dorado + sonido ---------- */
+function chime(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC(),t0=c.currentTime+.05;
+ const tone=(f,t,d,v,ty)=>{const o=c.createOscillator(),g=c.createGain();o.type=ty||'triangle';o.frequency.value=f;o.connect(g);g.connect(c.destination);
+  g.gain.setValueAtTime(0,t0+t);g.gain.linearRampToValueAtTime(v,t0+t+.015);g.gain.exponentialRampToValueAtTime(.0001,t0+t+d);o.start(t0+t);o.stop(t0+t+d+.05)};
+ [[523.25,0],[659.25,.1],[783.99,.2],[1046.5,.3],[1318.5,.42]].forEach(([f,t])=>{tone(f,t,.35,.22);tone(f*2,t,.25,.06,'sine')});
+ [1046.5,1318.5,1568,2093].forEach(f=>{tone(f,.6,1.3,.16);tone(f/2,.6,1.3,.08,'sine')});
+ [2637,3136,3951].forEach((f,i)=>tone(f,.75+i*.09,.35,.05,'sine'))}catch(e){}}
+function celebrate(){const d=day();
+ document.getElementById('wint').innerHTML=PH.map(p=>`<div><small>${PHN[p]}</small><b>${fmt(phMs(d,p,cur))}</b></div>`).join('')+`<div class="tt"><small>Total</small><b>${fmt(sessMs(d,cur))}</b></div>`;
+ document.getElementById('conf').innerHTML=Array.from({length:42},(_,i)=>`<i style="left:${Math.random()*100}%;animation-delay:${(Math.random()*1.4).toFixed(2)}s;animation-duration:${(2.2+Math.random()*1.8).toFixed(2)}s;background:${['#F5C518','#FFD95A','#E0A800','#FFF1A8'][i%4]};transform:rotate(${Math.random()*360|0}deg)"></i>`).join('');
+ document.getElementById('win').classList.add('show');chime()}
+function closeWin(){document.getElementById('win').classList.remove('show')}
+
 exDay=suggestDay();render();tick();authInit();
 </script>
 </body>
