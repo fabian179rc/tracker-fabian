@@ -236,26 +236,58 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .conf{position:absolute;inset:0;pointer-events:none;overflow:hidden}.conf i{position:absolute;top:-14px;width:9px;height:15px;border-radius:2px;animation:fall linear infinite}
 @keyframes fall{to{top:104%;margin-left:30px}}@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}@keyframes bob{50%{transform:translateY(-6px)}}
 @media(min-width:900px){
- body.fit{height:100vh;height:100dvh;overflow:hidden;padding-bottom:0}
+ body{zoom:var(--z,1);min-height:var(--vh,100vh)}
+ .app{max-width:none}
+ .panel{padding-left:16px;padding-right:16px}
+ .top{padding-left:16px;padding-right:16px}
+ body.fit{height:var(--vh,100vh);overflow:hidden;padding-bottom:0}
  body.fit .app{height:100%;display:flex;flex-direction:column}
- body.fit .panel{flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 16px 36px}
- body.fit .toprow{flex:0 0 auto;flex-wrap:wrap;margin-bottom:8px}
- body.fit .g.ent{flex:1;min-height:0;margin-bottom:0;display:grid;grid-template-columns:1fr 2fr 1fr;grid-template-rows:minmax(0,1fr);align-items:stretch;gap:10px;--k:1}
+ body.fit .panel{flex:1;min-height:0;display:flex;flex-direction:column;padding:6px 16px 34px}
+ body.fit .toprow{flex:0 0 auto;flex-direction:row;flex-wrap:nowrap;align-items:stretch;margin-bottom:8px;gap:8px}
+ body.fit .toprow>*{min-width:0}
+ body.fit .toprow .dtabs{flex:0 0 auto;width:auto;max-width:none}
+ body.fit .toprow .eq{flex:1 1 auto;overflow:hidden}
+ body.fit .toprow .eq-list{flex-wrap:nowrap}
+ body.fit .toprow .tm{flex:0 0 auto;flex-wrap:nowrap}
+ body.fit .toprow .pt{width:190px;flex:0 0 auto}
+ body.fit .g.ent{flex:1;min-height:0;margin-bottom:0;display:grid;grid-template-columns:1fr 1.7fr 1fr;grid-template-rows:minmax(0,1fr);align-items:stretch;gap:8px}
+ body.fit .g.ent>*{font-size:calc(14px*var(--k,1))}
  body.fit .g.ent>.card,body.fit .g.ent>.col{min-height:0;overflow:hidden}
- body.fit .g.ent>.col{gap:8px}
- body.fit .g.ent .card{padding:10px 12px}
- body.fit .ent .compact{font-size:calc(12.5px*var(--k))}
- body.fit .ent>.card:not(.compact){font-size:calc(14px*var(--k))}
- body.fit .ent .ex{padding:.32em 0}
- body.fit .ent .ex-name{font-size:1.02em}body.fit .ent .ex-ser{font-size:.88em}
- body.fit .ent .ex-desc{font-size:.8em;line-height:1.28}
- body.fit .ent .thumbs img{width:3.1em;height:3.1em}
- body.fit .ent .sc{width:2.1em;height:2.1em;font-size:1em}
- body.fit .ent .cb{width:1.6em;height:1.6em}
- body.fit .ent .ch{margin-bottom:.4em}
- body.fit .ent .ct{font-size:.85em}
+ body.fit .g.ent>.card{display:flex;flex-direction:column;padding:.6em .8em}
+ body.fit .g.ent>.col{display:flex;flex-direction:column;gap:8px}
+ body.fit .g.ent>.col>.card{flex:1 0 auto;min-height:0;display:flex;flex-direction:column;padding:.6em .8em}
+ body.fit .g.ent>.col>.card.nt{flex:0 0 auto}
+ body.fit .g.ent .ch{margin-bottom:.35em}
+ body.fit .g.ent .ct{font-size:.8em}
+ body.fit .g.ent .badge{font-size:.75em}
+ body.fit .g.ent .ex{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:.2em 0}
+ body.fit .g.ent .ex-top{gap:.6em;align-items:center}
+ body.fit .g.ent .ex-name{font-size:1em;font-weight:700}
+ body.fit .g.ent .ex-ser{font-size:.85em}
+ body.fit .g.ent .ex-desc{font-size:.78em;line-height:1.25;margin-top:.1em}
+ body.fit .g.ent .thumbs{flex-wrap:nowrap;max-width:none;gap:.3em}
+ body.fit .g.ent .thumbs img,body.fit .g.ent .compact .thumbs img{width:2.7em;height:2.7em;border-radius:.5em}
+ body.fit .g.ent .card:nth-child(2) .thumbs img{width:3.4em;height:3.4em}
+ body.fit .g.ent .sc{width:2em;height:2em;font-size:.9em}
+ body.fit .g.ent .info{width:1.8em;height:1.8em;font-size:.8em}
+ body.fit .g.ent .exm{height:2em;display:flex;align-items:center;flex-wrap:nowrap;overflow:hidden;font-size:.78em}
+ body.fit .g.ent .exm>*{margin-left:0;margin-right:.6em;white-space:nowrap}
+ body.fit .g.ent .exm .dn{padding:0 .6em}
+ body.fit .nt .nl{height:4.2em;overflow-y:auto;flex:0 0 auto}
+ body.fit .nt .empty{font-size:.85em;padding:.4em!important}
+ body.fit .toprow .eq .ct{white-space:nowrap}
+ body.fit .toprow .eq-list{gap:10px}
+ body.fit .toprow .eq-list figcaption i{display:none}
+ body.fit .toprow .tm{gap:4px}
+ body.fit .toprow .tm .tc{min-width:0;padding:2px 6px}
+ body.fit .nt .addrow{margin-top:.4em}
+ body.fit .nt .addrow input{min-width:0;font-size:inherit;padding:.3em .5em}
+ body.fit .nt .addrow .btn{font-size:inherit;padding:.3em .8em}
+ body.fit .nt .snack{padding:.25em 0;font-size:.85em}
  body.fit .cloud{bottom:6px;right:8px}
 }
+.exm:empty{display:none}.exm{display:block}
+.ch.sub{margin-top:.6em}
 </style>
 </head>
 <body>
@@ -295,7 +327,7 @@ const num=v=>(v===''||v==null||isNaN(+v))?null:+v;
 
 function newDay(){return{neck:null,back:null,energy:null,sleep:7,prot:{des:false,alm:false,mer:false,cen:false},
  fast:{on:false,h:14},sweets:0,sweetsPlanned:false,train:null,habits:{respiro:false,camine:false,levante:false,micro:false},
- meals:{des:'',alm:'',mer:'',cen:''},snacks:[],note:'',wk:{},sess:null,ph:null,tm:{},last:null,lastEx:null}}
+ meals:{des:'',alm:'',mer:'',cen:''},snacks:[],enotes:[],note:'',wk:{},sess:null,ph:null,tm:{},last:null,lastEx:null}}
 function migrate(o){const m=o.metrics||{},c=o.checks||{},d=newDay();
  d.neck=num(m.cuello);d.back=num(m.espalda);d.energy=num(m.energia);d.sleep=num(m.sueno);
  if(c.proteina)MEALS.forEach(x=>d.prot[x[0]]=true);
@@ -440,7 +472,7 @@ const ST_PSOAS=ex('Flexor de cadera (psoas)','20-30 seg por lado','Acostado en e
 const ST_BARRA=ex('Colgado en barra','30 segundos','Colgate de la barra de dominadas con las manos un poco más abiertas que los hombros y los brazos estirados. Si querés descargar peso, apoyá los pies en el piso o en una silla. Dejá caer el cuerpo con los hombros relajados (sin encogerlos) y respirá lento. Estira dorsales y hombros y descomprime la columna. Si duele el cuello o el hombro, soltá.',T('barra'));
 const ST_DORSAL=ex('Dorsal y costado (brazo arriba)','20 seg por lado','De pie, subí un brazo por encima de la cabeza y, con la otra mano, inclinate hacia el lado contrario hasta sentir el estiramiento en el costado del tronco. Respirá hacia el lado que se abre.',SE('dorsal','Brazo izquierdo','Brazo derecho'));
 const ST_RESP=ex('Respiración profunda acostado','5 respiraciones lentas','Boca arriba, una mano en el pecho y otra en la panza. Inhalá por la nariz llevando el aire a la panza y exhalá lento por la boca. Cierra la sesión bajando pulsaciones y tensión.',T('respiracion'));
-const HIPO=ex('Hipopresivos','1 vez','Exhalá todo el aire por la boca, sostené sin inspirar y llevá el ombligo hacia adentro y arriba sin forzar; después soltá e inhalá. Frená si hay mareo, ardor o dolor (con tus antecedentes digestivos y de ingle, consultalo con tu médico).',[]);
+const HIPO=ex('Hipopresivos','opcional','Exhalá todo el aire por la boca, sostené sin inspirar y llevá el ombligo hacia adentro y arriba sin forzar; después soltá e inhalá. Frená si hay mareo, ardor o dolor (con tus antecedentes digestivos y de ingle, consultalo con tu médico).',[]);
 const STRETCH=[
  [ST_PECHO,ST_PSOAS,ST_GLUTEO,ST_BARRA,ST_DORSAL,ST_RESP],
  [ST_ISQUIOS,ST_GLUTEO,ST_PECHO,ST_BARRA,ST_PSOAS,ST_RESP],
@@ -460,7 +492,7 @@ function phMs(d,p,k){const h=d&&d.ph;if(!h)return 0;let v=(h.a&&h.a[p])||0;
 function sessMs(d,k){if(d&&d.ph)return PH.reduce((t,p)=>t+phMs(d,p,k),0);
  const s=d&&d.sess;if(!s)return 0;const stale=!s.end&&(k||cur)!==todayKey(),now=Date.now(),e=s.end||(stale?(d.last||s.start):now);
  return e-s.start-(s.pt||0)-(s.pa&&!stale?now-s.pa:0)}
-function phDone(d,n,p){const L=p==='w'?[['warm'+n,WARMUP]]:p==='t'?[['d'+n,WORKOUTS[n].ex],['neck'+n,NECK],['hipo'+n,[HIPO]]]:[['s'+n,STRETCH[n]]];
+function phDone(d,n,p){const L=p==='w'?[['warm'+n,WARMUP]]:p==='t'?[['d'+n,WORKOUTS[n].ex],['neck'+n,NECK]]:[['s'+n,STRETCH[n]]];
  return L.every(([g,l])=>l.every((e,i)=>timesDone(d,g,i)>0))}
 function phSet(d,p,now){const h=d.ph;if(h.cur&&PH.includes(h.cur)&&h.since)h.a[h.cur]=(h.a[h.cur]||0)+(now-h.since);h.cur=p;h.pa=null;h.since=p==='end'?null:now}
 function phAdvance(d,n){const h=d.ph;if(!h||h.cur==='end')return false;const now=Date.now(),nx=PH.find(p=>!phDone(d,n,p));
@@ -502,7 +534,7 @@ function exItem(e,group,i,count,times,ro,tm,lr){
  const chip=was?(ro?`<span class="dn">✓ hecho${times>1?' ×'+times:''}</span>`:`<span class="dn" title="Guardado en Progreso e Historial. Tocá la ✕ para deshacer" onclick="event.stopPropagation();undoEx('${group}',${i})">✓${times>1?' ×'+times:''} <b>✕</b></span>`):(ro?`<span class="dn no">no hecho</span>`:'');
  const circ=ro?(was?'✓':'–'):rem;
  return `<div class="ex${ro&&!was?' skipped':''}"><div class="ex-top"${ro?'':` onclick="tapEx('${group}',${i},${e.sets})"`}><div class="sc ${ro?(was?'on':''):part?'part':was?'was':''}"${ro?'':' title="Tocá para descontar una serie"'}>${circ}</div>
-  <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div>${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}${isTip(group)?'':`<div class="ex-desc">${e.desc}</div>`}</div>
+  <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div><div class="exm">${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}</div>${isTip(group)?'':`<div class="ex-desc">${e.desc}</div>`}</div>
   <div class="thumbs">${th}</div>${isTip(group)?`<span class="iw"><button class="info" onclick="event.stopPropagation();this.classList.toggle('open')" onmouseleave="this.classList.remove('open')">i</button><div class="tip"><b>${e.name}</b><br>${e.desc}</div></span>`:''}</div></div>`}
 function tapEx(g,i,sets){let fin=false,won=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.done=d.done||{};let v=d.wk[g][i];v=v===true?sets:(+v||0);
  if(cur===todayKey()){const now=Date.now();
@@ -511,7 +543,11 @@ function tapEx(g,i,sets){let fin=false,won=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.d
  if(v+1>=sets){d.wk[g][i]=0;d.done[g+':'+i]=(+d.done[g+':'+i]||0)+1;fin=true}else d.wk[g][i]=v+1;
  if(fin){const n=+g.replace(/\D/g,'');if(d.ph&&cur===todayKey()){if(phAdvance(d,n))won=true}else if(PH.every(p=>phDone(d,n,p)))d.train='train'}});
  if(won)celebrate();else if(fin)toast('✓ Ejercicio guardado en el historial')}
-function undoEx(g,i){upd(d=>{d.done=d.done||{};const k=g+':'+i,n=(+d.done[k]||0)-1;if(n>0)d.done[k]=n;else delete d.done[k];if(d.wk[g])d.wk[g][i]=0})}
+function undoEx(g,i){upd(d=>{d.done=d.done||{};const k=g+':'+i,n=(+d.done[k]||0)-1;if(n>0)d.done[k]=n;else delete d.done[k];if(d.wk[g])d.wk[g][i]=0;
+ const h=d.ph;if(h&&cur===todayKey()){const dn=+g.replace(/\D/g,''),nx=PH.find(p=>!phDone(d,dn,p));
+  if(nx&&(h.cur==='end'||PH.indexOf(nx)<PH.indexOf(h.cur))){const now=Date.now();
+   if(h.cur==='end'){h.cur=nx;h.since=now;h.pa=null;if(d.train==='train')d.train=null;d.last=now}
+   else if(h.pa){h.cur=nx}else phSet(d,nx,now)}}})}
 function zoom(k){document.getElementById('lbimg').src=IMG[k];document.getElementById('lb').classList.add('show')}
 function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+dayIdx,SL=STRETCH[dayIdx];
  const sum=a=>a.reduce((x,y)=>x+y,0);
@@ -531,10 +567,19 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
  <div class="card"><div class="ch"><span class="ct">${w.title}</span><span class="badge">${done}/${tot} series</span></div>
   <div class="bar" style="margin-bottom:10px"><i style="width:${Math.round(done/tot*100)}%"></i></div>
   ${raw(g,w.ex)}
+  <div class="ch sub"><span class="ct">Cuello acostado</span><span class="badge">${dn[ng]}/${tt[ng]}</span></div>${raw(ng,NECK)}
+  ${ro&&!timesDone(d,hg,0)?'':`<div class="hp">${raw(hg,[HIPO])}</div>`}
   </div>
- <div class="col"><div class="card compact"><div class="ch"><span class="ct">Cuello acostado</span><span class="badge">${dn[ng]}/${tt[ng]}</span></div>${raw(ng,NECK)}</div>
- ${ro&&!timesDone(d,hg,0)?'':`<div class="card compact hp">${raw(hg,[HIPO])}</div>`}
- <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span class="badge amber">${dn[sg]}/${tt[sg]}</span></div>${raw(sg,SL)}</div></div></div>`}
+ <div class="col">
+ <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span class="badge amber">${dn[sg]}/${tt[sg]}</span></div>${raw(sg,SL)}</div>
+ ${notesCard(d,ro)}</div></div>`}
+function notesCard(d,ro){const L=d.enotes||[];if(ro&&!L.length)return '';
+ const li=L.map((s,i)=>`<div class="snack"><span class="tm">${esc(s.time||'')}</span><span class="tx">${esc(s.t)}</span>${ro?'':`<button onclick="upd(d=>d.enotes.splice(${i},1))">×</button>`}</div>`).join('')||'<div class="empty" style="padding:6px">Sin notas todavía.</div>';
+ return `<div class="card compact nt"><div class="ch"><span class="ct">📝 Notas del entreno</span><span class="badge amber">${L.length}</span></div><div class="nl">${li}</div>
+  ${ro?'':`<div class="addrow"><input type="text" id="ntin" placeholder="Cambié un ejercicio, peso, molestia…" onkeydown="if(event.key==='Enter')addNote()"><button class="btn" onclick="addNote()">Agregar</button></div>`}</div>`}
+function addNote(){const i=document.getElementById('ntin'),t=i.value.trim();if(!t)return;
+ const n=new Date(),time=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+ upd(d=>{d.enotes=d.enotes||[];d.enotes.push({t,time})})}
 function vEntreno(){return trainView(day(),exDay,false)}
 function trainDay(d){const c=[0,1,2].map(n=>({n,h:doneEntries(d).filter(x=>x.g==='d'+n).length})).filter(x=>x.h>0).sort((a,b)=>b.h-a.h);return c.length?c[0].n:null}
 function trainSection(){const k=showTrain;if(!k||!db[k])return '';const n=trainDay(db[k]);if(n==null)return '';
@@ -709,11 +754,24 @@ function render(){
  document.body.classList.toggle('fit',tab==='entreno');
  const sy=window.scrollY;document.getElementById('view').innerHTML=v();window.scrollTo(0,sy);fitEnt()}
 /* ---------- entreno a pantalla completa ---------- */
-function fitEnt(){const g=document.querySelector('body.fit .g.ent');if(!g||innerWidth<900)return;
- const cols=[...g.children];let k=1.35;g.style.setProperty('--k',k);
- const over=()=>cols.some(c=>c.scrollHeight>c.clientHeight+1);
- while(over()&&k>0.5){k=Math.round((k-0.03)*100)/100;g.style.setProperty('--k',k)}}
-window.addEventListener('resize',fitEnt);
+function applyZ(z){const r=document.documentElement.style;r.setProperty('--z',z.toFixed(3));r.setProperty('--vh',(innerHeight/z)+'px')}
+function setZoom(){let z=innerWidth>=900?Math.min(1.6,Math.max(1,innerWidth/1400)):1;applyZ(z);
+ if(innerWidth<900||tab==='entreno')return;
+ const v=document.getElementById('view'),ok=()=>{const r=v.getBoundingClientRect();return r.bottom+40<=innerHeight&&document.documentElement.scrollWidth<=innerWidth+1};
+ if(!ok())return;let lo=z,hi=Math.min(2.6,innerWidth/900);if(hi<=lo)return;
+ applyZ(hi);if(ok())return;
+ for(let i=0;i<9;i++){const m=(lo+hi)/2;applyZ(m);if(ok())lo=m;else hi=m}applyZ(lo)}
+let fitKey='',fitK=[1,1,1];
+function fitEnt(force){setZoom();const g=document.querySelector('body.fit .g.ent');if(!g||innerWidth<900)return;
+ const cols=[...g.children],over=c=>c.scrollHeight>c.clientHeight+1;
+ const key=[exDay,innerWidth,innerHeight,(document.querySelector('.toprow')||{}).offsetHeight].join('|');
+ cols.forEach((c,i)=>c.style.setProperty('--k',fitK[i]||1));
+ if(!force&&key===fitKey&&!cols.some(over))return;
+ cols.forEach((c,i)=>{let lo=0.5,hi=1.7;c.style.setProperty('--k',hi);
+  if(over(c)){for(let n=0;n<9;n++){const m=(lo+hi)/2;c.style.setProperty('--k',m);if(over(c))hi=m;else lo=m}fitK[i]=Math.floor(lo*100)/100}else fitK[i]=hi;
+  c.style.setProperty('--k',fitK[i])});
+ fitKey=key}
+window.addEventListener('resize',()=>fitEnt(true));window.addEventListener('load',()=>fitEnt(true));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fitEnt(true));
 /* ---------- popup dorado + sonido ---------- */
 function chime(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC(),t0=c.currentTime+.05;
  const tone=(f,t,d,v,ty)=>{const o=c.createOscillator(),g=c.createGain();o.type=ty||'triangle';o.frequency.value=f;o.connect(g);g.connect(c.destination);
