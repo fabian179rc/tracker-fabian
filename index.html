@@ -122,7 +122,7 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .tag.g{background:var(--brand-bg);color:var(--brand)}.tag.a{background:var(--amber-bg);color:var(--amber)}.tag.b{background:var(--blue-bg);color:var(--blue)}.tag.r{background:var(--red-bg);color:var(--red)}
 .dl-t{font-size:13px;margin-top:8px}.dl-t b{color:var(--muted);font-weight:600}
 .tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:60;padding-bottom:env(safe-area-inset-bottom)}
-.tabbar>div{display:grid;grid-template-columns:repeat(5,1fr)}
+.tabbar>div{display:grid;grid-template-columns:repeat(6,1fr)}
 .tabbar button{border:none;background:none;padding:9px 0 8px;font-weight:600;font-size:10.5px;font-family:inherit;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
 .tabbar button.on{color:var(--brand)}
 .tabbar svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -287,6 +287,7 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
  body.fit .cloud{bottom:6px;right:8px}
 }
 .exm:empty{display:none}.exm{display:block}
+@media(min-width:900px){body.narrow .app{max-width:860px}body.mid .app{max-width:1100px}}
 .ch.sub{margin-top:.6em}
 </style>
 </head>
@@ -325,7 +326,7 @@ const addDays=(k,n)=>{const d=fromKey(k);d.setDate(d.getDate()+n);return mk(d)};
 const todayKey=()=>mk(new Date());
 const num=v=>(v===''||v==null||isNaN(+v))?null:+v;
 
-function newDay(){return{neck:null,back:null,energy:null,sleep:7,prot:{des:false,alm:false,mer:false,cen:false},
+function newDay(){return{neck:null,back:null,energy:null,sleep:8,goals:[],pomos:0,prot:{des:false,alm:false,mer:false,cen:false},
  fast:{on:false,h:14},sweets:0,sweetsPlanned:false,train:null,habits:{respiro:false,camine:false,levante:false,micro:false},
  meals:{des:'',alm:'',mer:'',cen:''},snacks:[],enotes:[],note:'',wk:{},sess:null,ph:null,tm:{},last:null,lastEx:null}}
 function migrate(o){const m=o.metrics||{},c=o.checks||{},d=newDay();
@@ -352,9 +353,8 @@ function upd(fn,rerender=true){if(!db[cur])db[cur]=newDay();fn(db[cur]);db[cur].
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
 
 function score(d){if(!d)return null;const h=d.habits||{};
- const p=Object.values(d.prot||{}).filter(Boolean).length/4;
- const items=[d.sleep!=null&&d.sleep>=7,h.respiro,d.train!=null,h.camine,h.levante,h.micro];
- return (items.filter(Boolean).length+p)/7}
+  const items=[d.sleep!=null&&d.sleep>=7,h.respiro,d.train!=null,h.camine,h.levante,h.micro];
+ return items.filter(Boolean).length/6}
 
 /* ---------- helpers ---------- */
 function scale(label,key,inv){const d=day(),v=d[key];let b='';
@@ -364,25 +364,29 @@ function scale(label,key,inv){const d=day(),v=d[key];let b='';
 function cbRow(on,label,fn){return `<div class="row" onclick="${fn}"><div class="cb ${on?'on':''}"></div><div class="lab">${label}</div></div>`}
 
 /* ---------- HOY ---------- */
-function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);const pc=Object.values(d.prot).filter(Boolean).length;
- const pct=sc==null?0:Math.round(sc*100);
- return `<div class="g c3">
+function updK(k,fn){if(!db[k])db[k]=newDay();fn(db[k]);db[k]._u=Date.now();markDirty(k);persist()}
+const PRAISE=['¡Bien hecho! 🎉','¡Perfecto, lo estás haciendo muy bien! 💪','¡Día completado! Seguí así 🔥','¡Eso es constancia! 👏','¡Orgulloso de vos! ⭐'];
+function addGoal(){const i=document.getElementById('gin'),t=i.value.trim();if(!t)return;
+ updK(addDays(cur,1),d=>{d.goals=d.goals||[];d.goals.push({t,done:false})});toast('Agregado para mañana ✓');render()}
+function toggleGoal(i){upd(d=>{d.goals[i].done=!d.goals[i].done});
+ const g=day().goals||[];if(g.length&&g.every(x=>x.done))toast(PRAISE[Math.floor(Math.random()*PRAISE.length)])}
+function delGoal(k,i){updK(k,d=>d.goals.splice(i,1));render()}
+function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
+ const pct=sc==null?0:Math.round(sc*100),goals=d.goals||[],nxt=addDays(cur,1),ng=(db[nxt]&&db[nxt].goals)||[];
+ const gl=goals.length?goals.map((g,i)=>`<div class="row"><div class="cb ${g.done?'on':''}" onclick="toggleGoal(${i})"></div><div class="lab" onclick="toggleGoal(${i})" style="${g.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(g.t)}</div><button class="ib" style="width:30px;height:30px;font-size:15px" onclick="delGoal('${cur}',${i})">×</button></div>`).join(''):'<div class="empty" style="padding:8px">Sin metas para hoy. Las cargás la noche anterior en «Para mañana».</div>';
+ const nl=ng.length?ng.map((g,i)=>`<div class="snack"><span class="tx">${esc(g.t)}</span><button onclick="delGoal('${nxt}',${i})">×</button></div>`).join(''):'';
+ return `<div class="g c2">
  <div class="col">
   <div class="card"><div class="ch"><span class="ct">Progreso del día</span><span class="saved" id="saved">${db[cur]?'Guardado ✓':''}</span></div>
    <div class="split"><div><div class="big">${pct}%</div><div class="sub">de tus hábitos cumplidos</div></div>
-   <span class="badge">${pc}/4 proteína</span></div>
+   ${d.train==='train'?'<span class="badge">💪 Entrenaste hoy</span>':''}</div>
    <div class="bar" style="margin-top:12px"><i style="width:${pct}%"></i></div></div>
   <div class="card"><div class="ch"><span class="ct">Cómo amaneciste</span></div>
-   ${scale('Dolor de cuello','neck')}${scale('Dolor de espalda','back')}${scale('Energía','energy',true)}</div>
- </div>
- <div class="col">
+   ${scale('Dolor de cuello / rigidez','neck')}${scale('Dolor de espalda / rigidez','back')}</div>
   <div class="card"><div class="ch"><span class="ct">Sueño</span><span class="badge ${d.sleep!=null&&d.sleep>=7?'':'amber'}">${d.sleep!=null&&d.sleep>=7?'Meta cumplida':'Meta: 7 hs'}</span></div>
-   <div class="stepper"><button onclick="upd(d=>d.sleep=Math.max(0,(d.sleep??7)-0.5))">−</button>
-   <div class="v">${d.sleep??7}<small>hs</small></div>
-   <button onclick="upd(d=>d.sleep=Math.min(14,(d.sleep??7)+0.5))">+</button></div></div>
-  <div class="card"><div class="ch"><span class="ct">Entrenamiento</span></div>
-   ${cbRow(d.train==='train','💪 Entrené hoy',`upd(d=>d.train=d.train==='train'?null:'train')`)}
-   ${cbRow(d.train==='rest','😴 Día de descanso',`upd(d=>d.train=d.train==='rest'?null:'rest')`)}</div>
+   <div class="stepper"><button onclick="upd(d=>d.sleep=Math.max(0,(d.sleep??8)-0.5))">−</button>
+   <div class="v">${d.sleep??8}<small>hs</small></div>
+   <button onclick="upd(d=>d.sleep=Math.min(14,(d.sleep??8)+0.5))">+</button></div></div>
  </div>
  <div class="col">
   <div class="card"><div class="ch"><span class="ct">Hábitos</span></div>
@@ -390,30 +394,27 @@ function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);const pc=Object.value
    ${cbRow(h.camine,'🚶 Caminé 10 minutos',`upd(d=>d.habits.camine=!d.habits.camine)`)}
    ${cbRow(h.levante,'🖥️ Me levanté 4+ veces de la PC',`upd(d=>d.habits.levante=!d.habits.levante)`)}
    ${cbRow(h.micro,'🤸 Hice micropausas de movilidad',`upd(d=>d.habits.micro=!d.habits.micro)`)}</div>
+  <div class="card"><div class="ch"><span class="ct">Metas de hoy</span><span class="badge">${goals.filter(g=>g.done).length}/${goals.length}</span></div>${gl}</div>
+  <div class="card"><div class="ch"><span class="ct">Para mañana</span></div>${nl}
+   <div class="addrow"><input type="text" id="gin" placeholder="Algo que quiero cumplir mañana" onkeydown="if(event.key==='Enter')addGoal()"><button class="btn" onclick="addGoal()">Agregar</button></div></div>
   <div class="card"><div class="ch"><span class="ct">Nota del día</span></div>
    <textarea placeholder="Cómo quedó el entreno, agujetas, algo que comiste distinto..." oninput="upd(d=>d.note=this.value,false)">${esc(d.note)}</textarea></div>
  </div></div>`}
 
 /* ---------- COMIDAS ---------- */
 function vComidas(){const d=day();
- const meals=MEALS.map(m=>`<div class="card"><div class="meal-h"><b><span>${m[2]}</span>${m[1]}</b>
-  <span class="pill ${d.prot[m[0]]?'on':''}" onclick="upd(d=>d.prot.${m[0]}=!d.prot.${m[0]})">${d.prot[m[0]]?'✓ ':''}Con proteína</span></div>
+ const meals=MEALS.map(m=>`<div class="card"><div class="meal-h"><b><span>${m[2]}</span>${m[1]}</b></div>
   <textarea placeholder="¿Qué comiste?" oninput="upd(d=>d.meals.${m[0]}=this.value,false)">${esc(d.meals[m[0]])}</textarea></div>`).join('');
  const sn=d.snacks.length?d.snacks.map((s,i)=>`<div class="snack"><span class="tm">${esc(s.time||'')}</span><span class="tx">${esc(s.t)}</span><button onclick="upd(d=>d.snacks.splice(${i},1))">×</button></div>`).join(''):'<div class="empty" style="padding:10px">Sin picoteo registrado.</div>';
- const pc=Object.values(d.prot).filter(Boolean).length;
- return `<div class="g c4">${meals}
+ return `<div class="g c2">${meals}
   <div class="card"><div class="ch"><span class="ct">⏳ Ayuno</span></div>
    <div class="split"><div style="font-weight:600">Hice ayuno hoy</div><div class="tog ${d.fast.on?'on':''}" onclick="upd(d=>d.fast.on=!d.fast.on)"></div></div>
    ${d.fast.on?`<div class="stepper" style="margin-top:14px"><button onclick="upd(d=>d.fast.h=Math.max(1,d.fast.h-1))">−</button>
    <div class="v">${d.fast.h}<small>hs</small></div><button onclick="upd(d=>d.fast.h=Math.min(48,d.fast.h+1))">+</button></div>`:''}</div>
-  <div class="card"><div class="ch"><span class="ct">🍫 Dulce</span><span class="sub">porciones hoy</span></div>
-   <div class="stepper"><button onclick="upd(d=>d.sweets=Math.max(0,d.sweets-1))">−</button>
-   <div class="v">${d.sweets}</div><button onclick="upd(d=>d.sweets++)">+</button></div>
-   <div class="split" style="margin-top:12px"><div>Fue planificado</div><div class="tog ${d.sweetsPlanned?'on':''}" onclick="upd(d=>d.sweetsPlanned=!d.sweetsPlanned)"></div></div></div>
-  <div class="card span2"><div class="ch"><span class="ct">🍪 Picoteo</span><span class="badge amber">${d.snacks.length} registros</span></div>${sn}
+  <div class="card"><div class="ch"><span class="ct">🍪 Picoteo</span><span class="badge amber">${d.snacks.length} registros</span></div>${sn}
    <div class="addrow"><input type="text" id="snin" placeholder="Qué picoteaste (ej: 2 galletitas)" onkeydown="if(event.key==='Enter')addSnack()"><button class="btn" onclick="addSnack()">Agregar</button></div></div>
  </div>
- <div style="text-align:center"><span class="saved" id="saved">${db[cur]?'Guardado ✓':''} · Proteína hoy: ${pc}/4</span></div>`}
+ <div style="text-align:center"><span class="saved" id="saved">${db[cur]?'Guardado ✓':''}</span></div>`}
 function addSnack(){const i=document.getElementById('snin'),t=i.value.trim();if(!t)return;
  const n=new Date(),time=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
  upd(d=>d.snacks.push({t,time}))}
@@ -594,7 +595,7 @@ function stats(keys){const ds=keys.map(k=>db[k]).filter(Boolean),g=f=>ds.map(f).
  sleep:avg(g(d=>d.sleep)),neck:avg(g(d=>d.neck)),back:avg(g(d=>d.back)),energy:avg(g(d=>d.energy)),
  fasts:ds.filter(d=>d.fast.on).length,fastH:avg(ds.filter(d=>d.fast.on).map(d=>d.fast.h)),
  sweets:ds.reduce((s,d)=>s+d.sweets,0),prot:ds.length?ds.reduce((s,d)=>s+Object.values(d.prot).filter(Boolean).length,0)/(ds.length*4):null,
- score:avg(ds.map(score)),exs:ds.reduce((n,d)=>n+doneCount(d),0),sets:ds.reduce((n,d)=>n+doneSets(d),0)}}
+ pomos:ds.reduce((n,d)=>n+(d.pomos||0),0),score:avg(ds.map(score)),exs:ds.reduce((n,d)=>n+doneCount(d),0),sets:ds.reduce((n,d)=>n+doneSets(d),0)}}
 function doneEntries(d){return Object.keys(d.done||{}).map(k=>{const [g,i]=k.split(':'),list=g.startsWith('warm')?WARMUP:g.startsWith('neck')?NECK:g.startsWith('hipo')?[HIPO]:g[0]==='s'?STRETCH[+g.slice(1)]||[]:(WORKOUTS[+g.slice(1)]||{}).ex||[],e=list[+i];return e?{e,g,times:+d.done[k]}:null}).filter(Boolean)}
 function doneCount(d){return doneEntries(d).reduce((n,x)=>n+x.times,0)}
 function doneSets(d){return doneEntries(d).reduce((n,x)=>n+x.times*x.e.sets,0)}
@@ -618,35 +619,95 @@ function barChart(keys,fn,max,color,target){const W=320,H=130,L=22,R=8,Tp=8,B=20
   s+=`<rect x="${x(i)-Math.max(bw*.32,1)}" y="${y(hh)}" width="${Math.max(bw*.64,2)}" height="${Tp+ph-y(hh)}" rx="${bw>6?3:1}" fill="${c}"/>`});
  if(target)s+=`<line x1="${L}" x2="${W-R}" y1="${y(target)}" y2="${y(target)}" stroke="#BA7517" stroke-dasharray="4 3"/>`;
  return s+axisLbl(keys,x,H)+'</svg>'}
+function fitData(){const all=Object.keys(db).sort();if(!all.length)return{};
+ const t=todayKey(),out={};let v=0,k=all[0];
+ while(k<=t){const tr=!!db[k]&&db[k].train==='train';
+  if(tr)v+=1;else if(k<t)v=Math.max(0,v-0.5);
+  out[k]={v,tr};k=addDays(k,1)}
+ return out}
+function fitCard(keys){const D=fitData(),pts=keys.filter(k=>D[k]);
+ if(!pts.length)return '';
+ const W=320,H=170,L=26,R=8,Tp=10,B=20,pw=W-L-R,ph=H-Tp-B,n=pts.length;
+ const mx=Math.max(4,Math.ceil(Math.max(...pts.map(k=>D[k].v)))),x=i=>L+(n===1?pw/2:i*pw/(n-1)),y=v=>Tp+ph-(v/mx)*ph;
+ let sv=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:640px;display:block;margin:0 auto">`;
+ [0,mx/2,mx].forEach(v=>sv+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#E6E7E1"/><text x="${L-5}" y="${y(v)+3}" text-anchor="end">${Math.round(v*10)/10}</text>`);
+ sv+=`<polyline fill="none" stroke="#0F6E56" stroke-width="2.2" stroke-linejoin="round" points="${pts.map((k,i)=>x(i)+','+y(D[k].v)).join(' ')}"/>`;
+ const r=n>45?2:3.4;
+ pts.forEach((k,i)=>{const cx=x(i),cy=y(D[k].v);
+  sv+=(!D[k].tr&&k===todayKey())?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#9AA" stroke-width="1.4"/>`:D[k].tr?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1D9E75" stroke="#fff" stroke-width="1"/>`
+   :`<path d="M${cx-r} ${cy-r}L${cx+r} ${cy+r}M${cx+r} ${cy-r}L${cx-r} ${cy+r}" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>`});
+ sv+=axisLbl(pts,x,H)+'</svg>';
+ const last=D[pts[pts.length-1]].v,first=D[pts[0]].v,diff=last-first;
+ return `<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">Progreso total de entrenamiento</span><span class="badge ${diff<0?'amber':''}">${diff>=0?'▲ +':'▼ '}${f1(diff)} en el período</span></div>
+  ${sv}<div class="legend"><span><i style="background:#1D9E75;border-radius:50%"></i>Entrenó (+1)</span><span><span style="color:#C0392B;font-weight:800">✕</span> No entrenó (−0,5)</span><span>Puntos acumulados: <b>${f1(last)}</b></span></div></div>`}
 function vProgreso(){const keys=keysBack(range,todayKey()),prev=keysBack(range,addDays(todayKey(),-range));
  const S=stats(keys),P=stats(prev),wk=range/7;
  const kp=(l,n,sub,tr)=>`<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="sub">${sub||''}</div>${tr||''}</div>`;
  const pr=v=>v==null?null:v*100;
  const now=new Date(),dow=(now.getDay()+6)%7,mon=addDays(todayKey(),-dow);let rows='';
  for(let w=0;w<8;w++){const st=addDays(mon,-7*w),ks=Array.from({length:7},(_,i)=>addDays(st,i)),s=stats(ks),d=fromKey(st);
-  rows+=`<tr><td>${d.getDate()}/${d.getMonth()+1}${w===0?' <span class="sub">(actual)</span>':''}</td><td>${s.train}/3</td><td>${s.walk}</td><td>${s.prot==null?'—':Math.round(s.prot*100)+'%'}</td><td>${f1(s.sleep)}</td><td>${s.sweets}</td></tr>`}
+  rows+=`<tr><td>${d.getDate()}/${d.getMonth()+1}${w===0?' <span class="sub">(actual)</span>':''}</td><td>${s.train}/3</td><td>${s.walk}</td><td>${f1(s.sleep)}</td><td>${s.pomos}</td></tr>`}
  const empty=S.n===0?'<div class="empty">Todavía no hay datos en este período. Empezá registrando el día de hoy.</div>':'';
  return `<div class="seg">${[7,30,90].map(r=>`<button class="${range===r?'on':''}" onclick="range=${r};render()">${r} días</button>`).join('')}</div>${empty}
+ ${fitCard(keys)}
  <div class="kpis">
   ${kp('Entrenos',S.train+'<small> / '+Math.round(3*wk)+'</small>','meta 3 por semana',trend(S.train,P.train,false))}
   ${kp('Caminatas',S.walk+'<small> / '+Math.round(4*wk)+'</small>','meta 4 por semana',trend(S.walk,P.walk,false))}
   ${kp('Sueño promedio',f1(S.sleep)+'<small> hs</small>','meta 7 hs',trend(S.sleep,P.sleep,false,' hs'))}
-  ${kp('Proteína',S.prot==null?'—':Math.round(S.prot*100)+'<small>%</small>','de las comidas con proteína',trend(pr(S.prot),pr(P.prot),false,'%'))}
   ${kp('Dolor de cuello',f1(S.neck)+'<small> /10</small>','promedio',trend(S.neck,P.neck,true))}
   ${kp('Dolor de espalda',f1(S.back)+'<small> /10</small>','promedio',trend(S.back,P.back,true))}
-  ${kp('Energía',f1(S.energy)+'<small> /10</small>','promedio',trend(S.energy,P.energy,false))}
   ${kp('Constancia',S.score==null?'—':Math.round(S.score*100)+'<small>%</small>',S.n+' días registrados',trend(pr(S.score),pr(P.score),false,'%'))}
   ${kp('Ejercicios hechos',S.exs,'series completadas: '+S.sets,trend(S.exs,P.exs,false))}
   ${kp('Ayunos',S.fasts,S.fasts?'promedio '+f1(S.fastH)+' hs':'ninguno registrado')}
-  ${kp('Dulces',S.sweets+'<small> porc.</small>',S.n?f1(S.sweets/S.n)+' por día registrado':'')}
+  ${kp('Bloques de foco',S.pomos,'pomodoros completados',trend(S.pomos,P.pomos,false))}
  </div>
- <div class="g c4"><div class="card"><div class="ch"><span class="ct">Dolor y energía</span></div>${lineChart(keys,[{key:'neck',c:'#C0392B'},{key:'back',c:'#BA7517'},{key:'energy',c:'#1D9E75'}])}
-  <div class="legend"><span><i style="background:#C0392B"></i>Cuello</span><span><i style="background:#BA7517"></i>Espalda</span><span><i style="background:#1D9E75"></i>Energía</span></div></div>
+ <div class="g c3"><div class="card"><div class="ch"><span class="ct">Dolor de cuello y espalda</span></div>${lineChart(keys,[{key:'neck',c:'#C0392B'},{key:'back',c:'#BA7517'}])}
+  <div class="legend"><span><i style="background:#C0392B"></i>Cuello</span><span><i style="background:#BA7517"></i>Espalda</span></div></div>
  <div class="card"><div class="ch"><span class="ct">Horas de sueño</span></div>${barChart(keys,d=>d?d.sleep:null,10,v=>v>=7?'#1D9E75':'#E0A85A',7)}
   <div class="legend"><span><i style="background:#1D9E75"></i>≥ 7 hs</span><span><i style="background:#E0A85A"></i>menos de 7</span><span>┄ meta</span></div></div>
- <div class="card"><div class="ch"><span class="ct">Dulces por día</span></div>${barChart(keys,d=>d?d.sweets:null,Math.max(4,...keys.map(k=>db[k]?db[k].sweets:0)),'#BA7517')}</div>
  <div class="card"><div class="ch"><span class="ct">Últimas 8 semanas</span></div>
-  <table class="wk"><tr><th>Semana</th><th>Entrenos</th><th>Camin.</th><th>Prot.</th><th>Sueño</th><th>Dulces</th></tr>${rows}</table></div></div>`}
+  <table class="wk"><tr><th>Semana</th><th>Entrenos</th><th>Camin.</th><th>Sueño</th><th>Foco</th></tr>${rows}</table></div></div>`}
+
+/* ---------- FOCO (pomodoro + sonidos) ---------- */
+const TRACKS=[['foco-1','🎼','Instrumental para concentrarse'],['foco-2','🎶','Relajante anti-estrés'],['foco-3','🌧️','Lluvia (pomodoro)'],['foco-4','⛈️','Lluvia y truenos']];
+const PRESETS=[[25,5],[30,5],[50,10]];
+let fo=Object.assign({w:25,b:5,phase:'w',left:25*60000,end:null,run:false,track:'',vol:.6},JSON.parse(localStorage.getItem('fabian_foco')||'{}'));
+const au=new Audio();au.loop=true;au.preload='none';let wl=null;
+function foSave(){try{localStorage.setItem('fabian_foco',JSON.stringify(fo))}catch(e){}}
+function foLeft(){return fo.run?Math.max(0,fo.end-Date.now()):fo.left}
+async function foLock(){try{if(fo.run&&navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}}
+function foUnlock(){try{if(wl)wl.release()}catch(e){}wl=null}
+function foStart(){fo.run=true;fo.end=Date.now()+fo.left;foSave();foLock();if(fo.track){if(!au.getAttribute('src')){au.src='audio/'+fo.track+'.mp3';au.volume=fo.vol}if(au.paused)au.play().catch(()=>{})}render()}
+function foPause(){fo.left=foLeft();fo.run=false;fo.end=null;foSave();foUnlock();render()}
+function foReset(){fo.run=false;fo.phase='w';fo.left=fo.w*60000;fo.end=null;foSave();foUnlock();render()}
+function foPreset(i){fo.w=PRESETS[i][0];fo.b=PRESETS[i][1];fo.run=false;fo.phase='w';fo.left=fo.w*60000;fo.end=null;foSave();foUnlock();render()}
+function foTrack(t){fo.track=t;if(t){au.src='audio/'+t+'.mp3';au.volume=fo.vol;au.play().catch(()=>toast('Tocá ▶ para activar el sonido'))}else{au.pause();au.removeAttribute('src')}foSave();render()}
+function foVol(v){fo.vol=+v;au.volume=fo.vol;foSave()}
+function foDone(){const was=fo.phase;
+ if(was==='w'){updK(todayKey(),d=>{d.pomos=(d.pomos||0)+1});fo.phase='b';fo.left=fo.b*60000;fo.run=true;fo.end=Date.now()+fo.left}
+ else{fo.phase='w';fo.left=fo.w*60000;fo.run=false;fo.end=null;foUnlock()}
+ foSave();chime();try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
+ const msg=was==='w'?'¡Bloque de foco completado! Descansá '+fo.b+' min 🎉':'Descanso terminado. ¿Arrancamos otro bloque?';
+ toast(msg);try{if('Notification' in window&&Notification.permission==='granted')new Notification('Foco',{body:msg})}catch(e){}
+ render()}
+function foTick(){if(fo.run&&foLeft()<=0){foDone();return}
+ const el=document.getElementById('fclock');if(el)el.textContent=fmt(foLeft());
+ document.title=fo.run?fmt(foLeft())+' · '+(fo.phase==='w'?'Foco':'Descanso'):'Tracker Fabián'}
+setInterval(foTick,500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)foLock()});
+function vFoco(){const d=day(),total=(fo.phase==='w'?fo.w:fo.b)*60000,pc=Math.round((1-foLeft()/total)*100);
+ const pre=PRESETS.map((p,i)=>`<button class="${fo.w===p[0]?'on':''}" onclick="foPreset(${i})">${p[0]} / ${p[1]}<small>trabajo / descanso</small></button>`).join('');
+ const trk=[['','🔇','Sin sonido']].concat(TRACKS).map(t=>`<div class="row" onclick="foTrack('${t[0]}')"><div class="cb ${fo.track===t[0]?'on':''}"></div><div class="lab">${t[1]} ${t[2]}</div></div>`).join('');
+ return `<div class="g c2"><div class="col">
+  <div class="card"><div class="ch"><span class="ct">${fo.phase==='w'?'Bloque de foco':'Descanso'}</span><span class="badge">${d.pomos||0} hoy</span></div>
+   <div style="text-align:center;padding:6px 0 4px"><div class="big" id="fclock" style="font-size:64px;font-variant-numeric:tabular-nums">${fmt(foLeft())}</div>
+   <div class="bar" style="margin:14px 0"><i style="width:${pc}%"></i></div></div>
+   <div class="foot">${fo.run?'<button class="btn" onclick="foPause()">⏸ Pausar</button>':'<button class="btn" onclick="foStart()">▶ '+(fo.left<total?'Seguir':'Empezar')+'</button>'}<button class="btn ghost" onclick="foReset()">↺ Reiniciar</button></div>
+   <div class="sub" style="margin-top:10px">Un solo objetivo por bloque, celular boca abajo. La pantalla se mantiene encendida mientras corre.</div></div>
+  <div class="card"><div class="ch"><span class="ct">Duración</span></div><div class="dtabs">${pre}</div></div>
+ </div><div class="col">
+  <div class="card"><div class="ch"><span class="ct">Sonido de fondo</span></div>${trk}
+   <div class="split" style="margin-top:12px"><span class="sub">Volumen</span><input type="range" min="0" max="1" step="0.05" value="${fo.vol}" oninput="foVol(this.value)" style="flex:1"></div></div>
+ </div></div>`}
 
 /* ---------- HISTORIAL ---------- */
 function shiftMonth(n){const [y,m]=calMonth.split('-').map(Number),d=new Date(y,m-1+n,1);calMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');calSel=null;showTrain=null;render()}
@@ -656,17 +717,15 @@ function dayDetail(k){const d=db[k],dt=fromKey(k),lab=DAYS[dt.getDay()]+' '+dt.g
  if(d.habits.camine)tg.push('<span class="tag b">🚶 Caminó</span>');if((d.sess||d.ph)&&sessMs(d,k)>60000)tg.push('<span class="tag b">⏱ '+(d.ph?PH.map(p=>PHN[p].slice(0,5)+'. '+fmt(phMs(d,p,k))).join(' · '):fmt(sessMs(d,k)))+'</span>');if(d.habits.respiro)tg.push('<span class="tag">🌬️ Respiraciones</span>');
  if(d.habits.levante)tg.push('<span class="tag">🖥️ Se levantó</span>');if(d.habits.micro)tg.push('<span class="tag">🤸 Micropausas</span>');
  if(d.fast.on)tg.push(`<span class="tag a">⏳ Ayuno ${d.fast.h} hs</span>`);
- tg.push(`<span class="tag ${d.sweets?'a':'g'}">🍫 ${d.sweets} dulce(s)${d.sweetsPlanned?' · planificado':''}</span>`);
- const mt=[['Cuello',d.neck],['Espalda',d.back],['Energía',d.energy]].filter(x=>x[1]!=null).map(x=>`<span class="tag ${x[0]==='Energía'?'g':(x[1]>=6?'r':'')}">${x[0]} ${x[1]}/10</span>`);
+  const mt=[['Cuello',d.neck],['Espalda',d.back],['Energía',d.energy]].filter(x=>x[1]!=null).map(x=>`<span class="tag ${x[0]==='Energía'?'g':(x[1]>=6?'r':'')}">${x[0]} ${x[1]}/10</span>`);
  if(d.sleep!=null)mt.push(`<span class="tag ${d.sleep>=7?'g':'a'}">😴 ${d.sleep} hs</span>`);
- const p=MEALS.filter(m=>d.prot[m[0]]).map(m=>m[1]).join(', ')||'ninguna';
  const meals=MEALS.filter(m=>d.meals[m[0]]).map(m=>`<div class="dl-t"><b>${m[1]}:</b> ${esc(d.meals[m[0]])}</div>`).join('');
  const sn=d.snacks.length?`<div class="dl-t"><b>Picoteo:</b> ${d.snacks.map(s=>esc(s.t)+(s.time?' ('+s.time+')':'')).join(' · ')}</div>`:'';
  const ex=doneEntries(d),dias=[0,1,2].map(n=>({n,hechos:ex.filter(x=>x.g==='d'+n).length})).filter(x=>x.hechos>0),
   exl=dias.length?`<div class="dl-t"><b>Día de entreno:</b> ${dias.map(x=>'Día '+(x.n+1)+' — '+WORKOUTS[x.n].title.split('—')[1].trim()+' ('+x.hechos+' de '+WORKOUTS[x.n].ex.length+' ejercicios)').join(' · ')}</div>`:'';
  return `<div class="card"><div class="ch"><span class="ct">${lab}</span><span class="badge">${Math.round(score(d)*100)}%</span></div>
   <div class="chipline">${mt.join('')}</div><div class="chipline">${tg.join('')}</div>
-  <div class="dl-t"><b>Proteína en:</b> ${p}</div>${exl}${meals}${sn}${d.note?`<div class="dl-t"><b>Nota:</b> <i>${esc(d.note)}</i></div>`:''}
+  ${exl}${meals}${sn}${d.note?`<div class="dl-t"><b>Nota:</b> <i>${esc(d.note)}</i></div>`:''}
   <div class="foot" style="margin-top:14px"><button class="btn ghost" onclick="goDay('${k}','hoy')">Editar día</button><button class="btn ghost" onclick="goDay('${k}','comidas')">Ver comidas</button>${dias.length?`<button class="btn ghost" onclick="showTrain=showTrain==='${k}'?null:'${k}';render()">${showTrain===k?'Ocultar':'Ver'} entrenamiento</button>`:''}</div></div>`}
 function goDay(k,t){cur=k;tab=t;render();window.scrollTo(0,0)}
 function vHistorial(){const [y,m]=calMonth.split('-').map(Number),first=new Date(y,m-1,1),start=(first.getDay()+6)%7,dim=new Date(y,m,0).getDate();
@@ -675,14 +734,12 @@ function vHistorial(){const [y,m]=calMonth.split('-').map(Number),first=new Date
   const lv=sc==null?'':sc>=.85?'l4':sc>=.6?'l3':sc>=.35?'l2':'l1';
   cells+=`<button class="${lv} ${k===todayKey()?'td':''} ${k===calSel?'sel':''}" onclick="calSel='${k}';showTrain=null;render()">${i}</button>`}
  const ks=Object.keys(db).filter(k=>k.startsWith(calMonth)),ms=stats(ks);
- return `<div class="g c3"><div class="card"><div class="mnav"><button class="ib" onclick="shiftMonth(-1)">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="ib" onclick="shiftMonth(1)">›</button></div>
+ return `<div class="g c2"><div class="card"><div class="mnav"><button class="ib" onclick="shiftMonth(-1)">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="ib" onclick="shiftMonth(1)">›</button></div>
   <div class="cal">${cells}</div>
   <div class="legend"><span><i style="background:#D5EDE3"></i>Baja</span><span><i style="background:#9FD9C0"></i></span><span><i style="background:#4FB58D"></i></span><span><i style="background:#0F6E56"></i>Alta constancia</span></div>
-  <div class="sub" style="margin-top:10px">${ms.n} días registrados · ${ms.train} entrenos · sueño prom. ${f1(ms.sleep)} hs · ${ms.sweets} dulces</div></div>
+  <div class="sub" style="margin-top:10px">${ms.n} días registrados · ${ms.train} entrenos · sueño prom. ${f1(ms.sleep)} hs · ${ms.pomos||0} bloques de foco</div></div>
  ${calSel?dayDetail(calSel):'<div class="empty">Tocá un día del calendario para ver el detalle.</div>'}
- <div class="card"><div class="ch"><span class="ct">Copia de seguridad</span></div>
-  <div class="sub" style="margin-bottom:10px">Tus datos se guardan en este dispositivo y, con la sesión iniciada, también en la nube. Descargá una copia de vez en cuando.</div>
-  <div class="foot"><button class="btn ghost" onclick="exportData()">Exportar</button><button class="btn ghost" onclick="document.getElementById('imp').click()">Importar</button></div></div></div>${trainSection()}`}
+ </div>${trainSection()}`}
 function exportData(){const b=new Blob([JSON.stringify(db)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tracker_fabian_'+todayKey()+'.json';a.click()}
 document.getElementById('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(typeof o!=='object')throw 0;db=Object.assign({},db,o);Object.keys(o).forEach(k=>{if(db[k]){db[k]._u=Date.now();markDirty(k)}});persist();toast('Datos importados');render()}catch(x){toast('Archivo inválido')}};r.readAsText(f);e.target.value=''};
 
@@ -690,7 +747,8 @@ document.getElementById('imp').onchange=e=>{const f=e.target.files[0];if(!f)retu
 const SB_URL='https://ktfrcjyqchfdbeqftczr.supabase.co',SB_KEY='sb_publishable_2xdBmwwEKLPG65YfmiPxrA_m5lnc6g4';
 let sb=null,sbUser=null,syncSt='off',busy=false,pushT=null,dirty=new Set();
 try{dirty=new Set(JSON.parse(localStorage.getItem('fabian_tracker_dirty')||'[]'))}catch(e){}
-try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'fabian-tracker-auth',storage:window.localStorage}})}catch(e){}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 function saveDirty(){try{localStorage.setItem('fabian_tracker_dirty',JSON.stringify([...dirty]))}catch(e){}}
 function markDirty(k){dirty.add(k);saveDirty();clearTimeout(pushT);pushT=setTimeout(syncAll,1500)}
 function paintCloud(){const b=document.getElementById('cloud');if(!b)return;
@@ -740,8 +798,9 @@ const ICON={hoy:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><poly
  comidas:'<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>',
  entreno:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
  progreso:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+ foco:'<circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/>',
  historial:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'};
-const TABS=[['hoy','Hoy'],['comidas','Comidas'],['entreno','Entreno'],['progreso','Progreso'],['historial','Historial']];
+const TABS=[['hoy','Hoy'],['comidas','Comidas'],['entreno','Entreno'],['progreso','Progreso'],['foco','Foco'],['historial','Historial']];
 function render(){
  document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button class="${tab===t[0]?'on':''}" onclick="tab='${t[0]}';render();window.scrollTo(0,0)"><svg viewBox="0 0 24 24">${ICON[t[0]]}</svg>${t[1]}</button>`).join('');
  const dn=document.getElementById('datenav');
@@ -750,12 +809,12 @@ function render(){
    <div class="dl" onclick="cur=todayKey();render()">${isT?'Hoy':DAYS[dt.getDay()]}<small>${DAYS[dt.getDay()]} ${dt.getDate()} de ${MONTHS[dt.getMonth()]}${isT?'':' · tocá para volver a hoy'}</small></div>
    <button class="ib" onclick="cur=addDays(cur,1);render()" ${cur>=todayKey()?'disabled style="opacity:.35"':''}>›</button>`}
  else dn.style.display='none';
- const v={hoy:vHoy,comidas:vComidas,entreno:vEntreno,progreso:vProgreso,historial:vHistorial}[tab];
- document.body.classList.toggle('fit',tab==='entreno');
+ const v={hoy:vHoy,comidas:vComidas,entreno:vEntreno,progreso:vProgreso,foco:vFoco,historial:vHistorial}[tab];
+ document.body.classList.toggle('fit',tab==='entreno');document.body.classList.toggle('narrow',['hoy','comidas','foco'].includes(tab));document.body.classList.toggle('mid',['progreso','historial'].includes(tab));
  const sy=window.scrollY;document.getElementById('view').innerHTML=v();window.scrollTo(0,sy);fitEnt()}
 /* ---------- entreno a pantalla completa ---------- */
 function applyZ(z){const r=document.documentElement.style;r.setProperty('--z',z.toFixed(3));r.setProperty('--vh',(innerHeight/z)+'px')}
-function setZoom(){let z=innerWidth>=900?Math.min(1.6,Math.max(1,innerWidth/1400)):1;applyZ(z);
+function setZoom(){if(tab!=='entreno'){applyZ(1);return}let z=innerWidth>=900?Math.min(1.6,Math.max(1,innerWidth/1400)):1;applyZ(z);
  if(innerWidth<900||tab==='entreno')return;
  const v=document.getElementById('view'),ok=()=>{const r=v.getBoundingClientRect();return r.bottom+40<=innerHeight&&document.documentElement.scrollWidth<=innerWidth+1};
  if(!ok())return;let lo=z,hi=Math.min(2.6,innerWidth/900);if(hi<=lo)return;
