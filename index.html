@@ -289,6 +289,7 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .exm:empty{display:none}.exm{display:block}
 @media(min-width:900px){body.narrow #view{max-width:820px;margin-left:auto;margin-right:auto}body.mid #view{max-width:1150px;margin-left:auto;margin-right:auto}}
 .eq{min-width:0;overflow:hidden}.eq-list{min-width:0;max-width:100%;overflow-x:auto}
+html{scrollbar-gutter:stable}
 .ch.sub{margin-top:.6em}
 @media(min-width:900px){
  .eq,body.fit .toprow .eq{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;padding:4px 10px;overflow:hidden}
@@ -810,10 +811,10 @@ function render(){
  document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button class="${tab===t[0]?'on':''}" onclick="tab='${t[0]}';render();window.scrollTo(0,0)"><svg viewBox="0 0 24 24">${ICON[t[0]]}</svg>${t[1]}</button>`).join('');
  const dn=document.getElementById('datenav');
  if(['hoy','comidas','entreno'].includes(tab)){const dt=fromKey(cur),isT=cur===todayKey();
-  dn.style.display='flex';dn.innerHTML=`<button class="ib" onclick="cur=addDays(cur,-1);render()">‹</button>
+  dn.style.display='flex';dn.style.visibility='visible';dn.innerHTML=`<button class="ib" onclick="cur=addDays(cur,-1);render()">‹</button>
    <div class="dl" onclick="cur=todayKey();render()">${isT?'Hoy':DAYS[dt.getDay()]}<small>${DAYS[dt.getDay()]} ${dt.getDate()} de ${MONTHS[dt.getMonth()]}${isT?'':' · tocá para volver a hoy'}</small></div>
    <button class="ib" onclick="cur=addDays(cur,1);render()" ${cur>=todayKey()?'disabled style="opacity:.35"':''}>›</button>`}
- else dn.style.display='none';
+ else{dn.style.display='flex';dn.style.visibility='hidden';dn.innerHTML=`<button class="ib">‹</button><div class="dl">Hoy<small>&nbsp;</small></div><button class="ib">›</button>`}
  const v={hoy:vHoy,comidas:vComidas,entreno:vEntreno,progreso:vProgreso,foco:vFoco,historial:vHistorial}[tab];
  document.body.classList.toggle('fit',tab==='entreno');document.body.classList.toggle('narrow',['hoy','comidas','foco'].includes(tab));document.body.classList.toggle('mid',['progreso','historial'].includes(tab));
  const sy=window.scrollY;document.getElementById('view').innerHTML=v();window.scrollTo(0,sy);fitEnt()}
