@@ -55,6 +55,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;c
 .chip{border:1.5px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center;font-size:13px;font-weight:600;background:var(--card);cursor:pointer;color:var(--muted);user-select:none}
 .chip .e{display:block;font-size:20px;margin-bottom:2px}
 .chip.on{background:var(--brand-bg);border-color:var(--brand2);color:var(--brand)}
+.sleepbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sleepin{width:84px;font-size:28px;font-weight:800;text-align:center;border:1px solid var(--line);border-radius:12px;padding:6px;font-family:inherit;background:var(--bg);color:var(--text)}.sleepu{font-size:13px;font-weight:600;color:var(--muted)}
 .stepper{display:flex;align-items:center;gap:14px}
 .stepper button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:22px;cursor:pointer;color:var(--text)}
 .stepper button:active{background:var(--brand-bg)}
@@ -113,6 +114,8 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .cal .h{font-size:11px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px}
 .cal button{aspect-ratio:1/1;border-radius:10px;border:1.5px solid transparent;background:var(--bg);font-weight:600;font-size:13px;font-family:inherit;color:var(--text);cursor:pointer}
 .cal button.e{visibility:hidden}
+.cal button{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 3px 5px;gap:2px}.cal .dn2{font-size:12px;line-height:1}.cal .sq{display:flex;align-items:flex-end;justify-content:center;gap:3px;width:100%}.cal .sq i{display:block;border-radius:3px;border:1.5px solid #C9CCC4;background:#fff}.cal .sq .t{width:42%;aspect-ratio:1/1}.cal .sq .m,.cal .sq .hb{width:22%;aspect-ratio:1/1}.cal .sq i.f1{background:#9FD9C0;border-color:#9FD9C0}.cal .sq i.f2{background:#4FB58D;border-color:#4FB58D}.cal .sq i.f3{background:#0F6E56;border-color:#0F6E56}.cal .sq i.r{background:#C9CCC4;border-color:#C9CCC4}
+.legend i.sqL{border-radius:3px;display:inline-block}
 .cal button.l1{background:#D5EDE3}.cal button.l2{background:#9FD9C0}.cal button.l3{background:#4FB58D;color:#fff}.cal button.l4{background:#0F6E56;color:#fff}
 .cal button.td{border-color:var(--text)}.cal button.sel{outline:3px solid var(--blue);outline-offset:1px}
 .mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -300,6 +303,8 @@ html{scrollbar-gutter:stable}
  .eq-list figcaption,body.fit .toprow .eq-list figcaption{font-size:var(--eqf,11.5px);white-space:nowrap}
  body.fit .toprow .eq-list figcaption i{display:inline}
  .eq-list img{width:var(--eqi,30px);height:var(--eqi,30px)}
+ .eq .ct{text-align:center}
+ .eq-list,body.fit .toprow .eq-list{justify-content:center;align-content:center;gap:4px 18px;text-align:center}
 }
 </style>
 </head>
@@ -364,15 +369,18 @@ function day(){return db[cur]||newDay()}
 function upd(fn,rerender=true){if(!db[cur])db[cur]=newDay();fn(db[cur]);db[cur]._u=Date.now();markDirty(cur);persist();if(rerender)render();else{const s=document.getElementById('saved');if(s)s.textContent='Guardado ✓'}}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
 
-function score(d){if(!d)return null;const h=d.habits||{};
-  const items=[d.sleepSet!==false&&d.sleep!=null&&d.sleep>=7,h.respiro,d.train!=null,h.camine,h.levante,h.micro];
- return items.filter(Boolean).length/6}
+function mealsFull(d){return MEALS.every(m=>((d.meals||{})[m[0]]||'').trim())}
+function habitFlags(d){const h=d.habits||{};return [d.sleepSet!==false&&d.sleep!=null&&d.sleep>=7,!!h.respiro,!!h.camine,!!h.levante,!!h.micro]}
+/* entreno vale 3; comidas completas, sueño y cada hábito valen 1 (total 9) */
+function score(d){if(!d)return null;
+ return ((d.train!=null?3:0)+(mealsFull(d)?1:0)+habitFlags(d).filter(Boolean).length)/9}
 
 /* ---------- helpers ---------- */
 function scale(label,key,inv){const d=day(),v=d[key];let b='';
  for(let i=0;i<=10;i++){const t=inv?1-i/10:i/10,hue=Math.round(130-130*t);
   b+=`<button class="${v===i?'on':''}" style="${v===i?`background:hsl(${hue},58%,42%)`:''}" onclick="upd(d=>d.${key}=d.${key}===${i}?null:${i})">${i}</button>`}
  return `<div class="scale-l"><span>${label}</span><span>${v==null?'sin dato':v+' / 10'}</span></div><div class="scale">${b}</div>`}
+function sleepType(v){const n=parseFloat(String(v).replace(',','.'));upd(d=>{if(isNaN(n)){d.sleepSet=false;d.sleep=8}else{d.sleep=Math.min(14,Math.max(0,n));d.sleepSet=true}},false)}
 function cbRow(on,label,fn){return `<div class="row" onclick="${fn}"><div class="cb ${on?'on':''}"></div><div class="lab">${label}</div></div>`}
 
 /* ---------- HOY ---------- */
@@ -395,10 +403,10 @@ function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
    <div class="bar" style="margin-top:12px"><i style="width:${pct}%"></i></div></div>
   <div class="card"><div class="ch"><span class="ct">Cómo amaneciste</span></div>
    ${scale('Dolor de cuello / rigidez','neck')}${scale('Dolor de espalda / rigidez','back')}${scale('Energía','energy',true)}</div>
-  <div class="card"><div class="ch"><span class="ct">Sueño</span><span class="badge ${d.sleep!=null&&d.sleep>=7?'':'amber'}">${d.sleep!=null&&d.sleep>=7?'Meta cumplida':'Meta: 7 hs'}</span></div>
-   <div class="stepper"><button onclick="upd(d=>{d.sleep=Math.max(0,(d.sleep??8)-0.5);d.sleepSet=true})">−</button>
-   <div class="v">${d.sleep??8}<small>hs</small></div>
-   <button onclick="upd(d=>{d.sleep=Math.min(14,(d.sleep??8)+0.5);d.sleepSet=true})">+</button></div></div>
+  <div class="card"><div class="ch"><span class="ct">Sueño</span><span class="badge ${d.sleepSet&&d.sleep>=7?'':'amber'}">${d.sleepSet&&d.sleep>=7?'Meta cumplida':'Meta: 7 hs'}</span></div>
+   <div class="sleepbox"><input type="number" inputmode="decimal" min="0" max="14" step="0.5" class="sleepin" placeholder="8" value="${d.sleepSet?d.sleep:''}" oninput="sleepType(this.value)"><span class="sleepu">hs</span>
+   <button class="btn ${d.sleepSet&&d.sleep===8?'':'ghost'}" onclick="upd(d=>{d.sleep=8;d.sleepSet=true})">${d.sleepSet&&d.sleep===8?'✓ ':''}Dormí 8 hs</button></div>
+   <div class="sub" style="margin-top:8px">${d.sleepSet?'Anotado: '+d.sleep+' hs':'Todavía sin anotar: escribí las horas o tocá el botón.'}</div></div>
  </div>
  <div class="col">
   <div class="card"><div class="ch"><span class="ct">Hábitos</span></div>
@@ -634,15 +642,17 @@ function barChart(keys,fn,max,color,target){const W=320,H=130,L=22,R=8,Tp=8,B=20
 function fitCard(keys){const pts=[];let n=0;
  Object.keys(db).sort().forEach(k=>{if(db[k]&&db[k].train==='train'){n++;if(keys.includes(k))pts.push({k,v:n})}});
  if(!pts.length)return '';
- const base=n-pts.length,W=320,H=170,L=26,R=10,Tp=10,B=20,pw=W-L-R,ph=H-Tp-B;
- const t0=fromKey(pts[0].k).getTime(),t1=fromKey(pts[pts.length-1].k).getTime(),span=Math.max(1,t1-t0);
- const x=k=>pts.length===1?L+pw/2:L+((fromKey(k).getTime()-t0)/span)*pw;
+ const vw=(document.getElementById('view')||{}).clientWidth||0,W=vw>0?Math.max(320,Math.min(1150,vw-34)):320;
+ const L=28,R=14,Tp=12,pw=W-L-R,step=pts.length>1?pw/(pts.length-1):0,rot=step<34,B=rot?44:22,H=rot?250:210,ph=H-Tp-B;
+ const x=i=>pts.length===1?L+pw/2:L+i*step;
  const mx=Math.max(3,pts[pts.length-1].v),mn=Math.max(0,pts[0].v-1),y=v=>Tp+ph-((v-mn)/(mx-mn))*ph;
- let sv=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:520px;display:block;margin:0 auto">`;
+ let sv=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;font-size:11px">`;
  [mn,(mn+mx)/2,mx].forEach(v=>sv+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#E6E7E1"/><text x="${L-5}" y="${y(v)+3}" text-anchor="end">${Math.round(v)}</text>`);
- sv+=`<polyline fill="none" stroke="#0F6E56" stroke-width="1.6" stroke-linejoin="round" points="${pts.map(p=>x(p.k)+','+y(p.v)).join(' ')}"/>`;
- pts.forEach(p=>sv+=`<circle cx="${x(p.k)}" cy="${y(p.v)}" r="2.2" fill="#0F6E56"/>`);
- sv+=axisLbl(pts.map(p=>p.k),i=>x(pts[i].k),H)+'</svg>';
+ sv+=`<polyline fill="none" stroke="#0F6E56" stroke-width="1.6" stroke-linejoin="round" points="${pts.map((p,i)=>x(i)+','+y(p.v)).join(' ')}"/>`;
+ pts.forEach((p,i)=>{const d=fromKey(p.k),lb=d.getDate()+'/'+(d.getMonth()+1);
+  sv+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="2.4" fill="#0F6E56"/>`;
+  sv+=rot?`<text transform="translate(${x(i)+3},${H-B+10}) rotate(-60)" text-anchor="end" font-size="10">${lb}</text>`:`<text x="${x(i)}" y="${H-6}" text-anchor="middle">${lb}</text>`});
+ sv+='</svg>';
  return `<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">Entrenamientos acumulados</span><span class="badge">${pts[pts.length-1].v} en total</span></div>${sv}</div>`}
 function vProgreso(){const keys=keysBack(range,todayKey()),prev=keysBack(range,addDays(todayKey(),-range));
  const S=stats(keys),P=stats(prev),wk=range/7;
@@ -737,12 +747,14 @@ function goDay(k,t){cur=k;tab=t;render();window.scrollTo(0,0)}
 function vHistorial(){const [y,m]=calMonth.split('-').map(Number),first=new Date(y,m-1,1),start=(first.getDay()+6)%7,dim=new Date(y,m,0).getDate();
  let cells=['L','M','X','J','V','S','D'].map(l=>`<div class="h">${l}</div>`).join('')+'<button class="e"></button>'.repeat(start);
  for(let i=1;i<=dim;i++){const k=calMonth+'-'+String(i).padStart(2,'0'),d=db[k],sc=d?score(d):null;
-  const lv=!sc?'':sc>=.85?'l4':sc>=.6?'l3':sc>=.35?'l2':'l1';
-  cells+=`<button class="${lv} ${k===todayKey()?'td':''} ${k===calSel?'sel':''}" onclick="calSel='${k}';showTrain=null;render()">${i}</button>`}
+  let sq='';if(d){const hf=habitFlags(d).filter(Boolean).length,mf=MEALS.filter(m=>((d.meals||{})[m[0]]||'').trim()).length,lv3=(n,t)=>n<=0?'':n>=t?'f3':n/t>=.5?'f2':'f1';
+   const tcl=d.train==='train'?'f3':d.train==='rest'?'r':dayTouched(d,0)||dayTouched(d,1)||dayTouched(d,2)?'f1':'';
+   sq=`<span class="sq"><i class="t ${tcl}" title="Entreno"></i><i class="m ${lv3(mf,4)}" title="Comidas ${mf}/4"></i><i class="hb ${lv3(hf,5)}" title="Hábitos ${hf}/5"></i></span>`}
+  cells+=`<button class="${k===todayKey()?'td':''} ${k===calSel?'sel':''}" onclick="calSel='${k}';showTrain=null;render()"><span class="dn2">${i}</span>${sq||'<span class="sq"></span>'}</button>`}
  const ks=Object.keys(db).filter(k=>k.startsWith(calMonth)),ms=stats(ks);
  return `<div class="g c2"><div class="card"><div class="mnav"><button class="ib" onclick="shiftMonth(-1)">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="ib" onclick="shiftMonth(1)">›</button></div>
   <div class="cal">${cells}</div>
-  <div class="legend"><span><i style="background:#D5EDE3"></i>Baja</span><span><i style="background:#9FD9C0"></i></span><span><i style="background:#4FB58D"></i></span><span><i style="background:#0F6E56"></i>Alta constancia</span></div>
+  <div class="legend"><span><i class="sqL" style="background:#0F6E56;width:14px;height:14px"></i>Entreno (grande)</span><span><i class="sqL" style="background:#4FB58D;width:9px;height:9px"></i>Comidas</span><span><i class="sqL" style="background:#9FD9C0;width:9px;height:9px"></i>Hábitos</span><span>más oscuro = más completo · gris = descanso</span></div>
   <div class="sub" style="margin-top:10px">${ms.n} días registrados · ${ms.train} entrenos · sueño prom. ${f1(ms.sleep)} hs · ${ms.pomos||0} bloques de foco</div></div>
  ${calSel?dayDetail(calSel):'<div class="empty">Tocá un día del calendario para ver el detalle.</div>'}
  </div>${trainSection()}`}
