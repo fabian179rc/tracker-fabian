@@ -290,6 +290,16 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 @media(min-width:900px){body.narrow #view{max-width:820px;margin-left:auto;margin-right:auto}body.mid #view{max-width:1150px;margin-left:auto;margin-right:auto}}
 .eq{min-width:0;overflow:hidden}.eq-list{min-width:0;max-width:100%;overflow-x:auto}
 .ch.sub{margin-top:.6em}
+@media(min-width:900px){
+ .eq,body.fit .toprow .eq{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;padding:4px 10px;overflow:hidden}
+ .eq .ct{display:block;margin:0;font-size:9.5px;line-height:1;white-space:nowrap}
+ .eq{position:relative;min-height:60px}
+ .eq-list,body.fit .toprow .eq-list{position:absolute;left:10px;right:10px;top:17px;bottom:3px;display:flex;flex-wrap:wrap;align-content:space-evenly;justify-content:space-evenly;align-items:center;gap:2px 10px;overflow:hidden;max-width:100%}
+ .eq-list figure{display:flex;align-items:center;gap:5px;min-width:0}
+ .eq-list figcaption,body.fit .toprow .eq-list figcaption{font-size:var(--eqf,11.5px);white-space:nowrap}
+ body.fit .toprow .eq-list figcaption i{display:inline}
+ .eq-list img{width:var(--eqi,30px);height:var(--eqi,30px)}
+}
 </style>
 </head>
 <body>
@@ -383,7 +393,7 @@ function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
    ${d.train==='train'?'<span class="badge">💪 Entrenaste hoy</span>':''}</div>
    <div class="bar" style="margin-top:12px"><i style="width:${pct}%"></i></div></div>
   <div class="card"><div class="ch"><span class="ct">Cómo amaneciste</span></div>
-   ${scale('Dolor de cuello / rigidez','neck')}${scale('Dolor de espalda / rigidez','back')}</div>
+   ${scale('Dolor de cuello / rigidez','neck')}${scale('Dolor de espalda / rigidez','back')}${scale('Energía','energy',true)}</div>
   <div class="card"><div class="ch"><span class="ct">Sueño</span><span class="badge ${d.sleep!=null&&d.sleep>=7?'':'amber'}">${d.sleep!=null&&d.sleep>=7?'Meta cumplida':'Meta: 7 hs'}</span></div>
    <div class="stepper"><button onclick="upd(d=>{d.sleep=Math.max(0,(d.sleep??8)-0.5);d.sleepSet=true})">−</button>
    <div class="v">${d.sleep??8}<small>hs</small></div>
@@ -810,13 +820,14 @@ function render(){
 /* ---------- entreno a pantalla completa ---------- */
 function applyZ(z){const r=document.documentElement.style;r.setProperty('--z',z.toFixed(3));r.setProperty('--vh',(innerHeight/z)+'px')}
 function setZoom(){let z=innerWidth>=900?Math.min(1.6,Math.max(1,innerWidth/1400)):1;applyZ(z);
- if(innerWidth<900||tab==='entreno')return;
- const v=document.getElementById('view'),ok=()=>{const r=v.getBoundingClientRect();return r.bottom+40<=innerHeight&&document.documentElement.scrollWidth<=innerWidth+1};
- if(!ok())return;let lo=z,hi=Math.min(2.6,innerWidth/900);if(hi<=lo)return;
- applyZ(hi);if(ok())return;
- for(let i=0;i<9;i++){const m=(lo+hi)/2;applyZ(m);if(ok())lo=m;else hi=m}applyZ(lo)}
+}
+function fitEq(){const l=document.querySelector('.eq-list');if(!l||innerWidth<900)return;const st=l.style;
+ let sc=1;const set=()=>{st.setProperty('--eqi',(34*sc)+'px');st.setProperty('--eqf',(12*sc)+'px')};
+ const over=()=>l.scrollHeight>l.clientHeight+1||l.scrollWidth>l.clientWidth+1;
+ for(let n=0;n<14;n++){set();if(!over())break;sc-=.05}set();
+ l.querySelectorAll('figure').forEach(f=>{});}
 let fitKey='',fitK=[1,1,1];
-function fitEnt(force){setZoom();const g=document.querySelector('body.fit .g.ent');if(!g||innerWidth<900)return;
+function fitEnt(force){setZoom();fitEq();const g=document.querySelector('body.fit .g.ent');if(!g||innerWidth<900)return;
  const cols=[...g.children],over=c=>c.scrollHeight>c.clientHeight+1;
  const key=[exDay,innerWidth,innerHeight,(document.querySelector('.toprow')||{}).offsetHeight].join('|');
  cols.forEach((c,i)=>c.style.setProperty('--k',fitK[i]||1));
