@@ -287,7 +287,8 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
  body.fit .cloud{bottom:6px;right:8px}
 }
 .exm:empty{display:none}.exm{display:block}
-@media(min-width:900px){body.narrow .app{max-width:860px}body.mid .app{max-width:1100px}}
+@media(min-width:900px){body.narrow #view{max-width:820px;margin-left:auto;margin-right:auto}body.mid #view{max-width:1150px;margin-left:auto;margin-right:auto}}
+.eq{min-width:0;overflow:hidden}.eq-list{min-width:0;max-width:100%;overflow-x:auto}
 .ch.sub{margin-top:.6em}
 </style>
 </head>
@@ -326,7 +327,7 @@ const addDays=(k,n)=>{const d=fromKey(k);d.setDate(d.getDate()+n);return mk(d)};
 const todayKey=()=>mk(new Date());
 const num=v=>(v===''||v==null||isNaN(+v))?null:+v;
 
-function newDay(){return{neck:null,back:null,energy:null,sleep:8,goals:[],pomos:0,prot:{des:false,alm:false,mer:false,cen:false},
+function newDay(){return{neck:null,back:null,energy:null,sleep:8,sleepSet:false,goals:[],pomos:0,prot:{des:false,alm:false,mer:false,cen:false},
  fast:{on:false,h:14},sweets:0,sweetsPlanned:false,train:null,habits:{respiro:false,camine:false,levante:false,micro:false},
  meals:{des:'',alm:'',mer:'',cen:''},snacks:[],enotes:[],note:'',wk:{},sess:null,ph:null,tm:{},last:null,lastEx:null}}
 function migrate(o){const m=o.metrics||{},c=o.checks||{},d=newDay();
@@ -353,7 +354,7 @@ function upd(fn,rerender=true){if(!db[cur])db[cur]=newDay();fn(db[cur]);db[cur].
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
 
 function score(d){if(!d)return null;const h=d.habits||{};
-  const items=[d.sleep!=null&&d.sleep>=7,h.respiro,d.train!=null,h.camine,h.levante,h.micro];
+  const items=[d.sleepSet!==false&&d.sleep!=null&&d.sleep>=7,h.respiro,d.train!=null,h.camine,h.levante,h.micro];
  return items.filter(Boolean).length/6}
 
 /* ---------- helpers ---------- */
@@ -373,7 +374,7 @@ function toggleGoal(i){upd(d=>{d.goals[i].done=!d.goals[i].done});
 function delGoal(k,i){updK(k,d=>d.goals.splice(i,1));render()}
 function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
  const pct=sc==null?0:Math.round(sc*100),goals=d.goals||[],nxt=addDays(cur,1),ng=(db[nxt]&&db[nxt].goals)||[];
- const gl=goals.length?goals.map((g,i)=>`<div class="row"><div class="cb ${g.done?'on':''}" onclick="toggleGoal(${i})"></div><div class="lab" onclick="toggleGoal(${i})" style="${g.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(g.t)}</div><button class="ib" style="width:30px;height:30px;font-size:15px" onclick="delGoal('${cur}',${i})">×</button></div>`).join(''):'<div class="empty" style="padding:8px">Sin metas para hoy. Las cargás la noche anterior en «Para mañana».</div>';
+ const gl=goals.length?goals.map((g,i)=>`<div class="row"><div class="cb ${g.done?'on':''}" onclick="toggleGoal(${i})"></div><div class="lab" onclick="toggleGoal(${i})" style="${g.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(g.t)}</div><button class="ib" style="width:30px;height:30px;font-size:15px" onclick="delGoal('${cur}',${i})">×</button></div>`).join(''):'<div class="empty" style="padding:8px">Sin objetivos para hoy. Los cargás la noche anterior en «Objetivos para mañana».</div>';
  const nl=ng.length?ng.map((g,i)=>`<div class="snack"><span class="tx">${esc(g.t)}</span><button onclick="delGoal('${nxt}',${i})">×</button></div>`).join(''):'';
  return `<div class="g c2">
  <div class="col">
@@ -384,9 +385,9 @@ function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
   <div class="card"><div class="ch"><span class="ct">Cómo amaneciste</span></div>
    ${scale('Dolor de cuello / rigidez','neck')}${scale('Dolor de espalda / rigidez','back')}</div>
   <div class="card"><div class="ch"><span class="ct">Sueño</span><span class="badge ${d.sleep!=null&&d.sleep>=7?'':'amber'}">${d.sleep!=null&&d.sleep>=7?'Meta cumplida':'Meta: 7 hs'}</span></div>
-   <div class="stepper"><button onclick="upd(d=>d.sleep=Math.max(0,(d.sleep??8)-0.5))">−</button>
+   <div class="stepper"><button onclick="upd(d=>{d.sleep=Math.max(0,(d.sleep??8)-0.5);d.sleepSet=true})">−</button>
    <div class="v">${d.sleep??8}<small>hs</small></div>
-   <button onclick="upd(d=>d.sleep=Math.min(14,(d.sleep??8)+0.5))">+</button></div></div>
+   <button onclick="upd(d=>{d.sleep=Math.min(14,(d.sleep??8)+0.5);d.sleepSet=true})">+</button></div></div>
  </div>
  <div class="col">
   <div class="card"><div class="ch"><span class="ct">Hábitos</span></div>
@@ -394,9 +395,9 @@ function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
    ${cbRow(h.camine,'🚶 Caminé 10 minutos',`upd(d=>d.habits.camine=!d.habits.camine)`)}
    ${cbRow(h.levante,'🖥️ Me levanté 4+ veces de la PC',`upd(d=>d.habits.levante=!d.habits.levante)`)}
    ${cbRow(h.micro,'🤸 Hice micropausas de movilidad',`upd(d=>d.habits.micro=!d.habits.micro)`)}</div>
-  <div class="card"><div class="ch"><span class="ct">Metas de hoy</span><span class="badge">${goals.filter(g=>g.done).length}/${goals.length}</span></div>${gl}</div>
-  <div class="card"><div class="ch"><span class="ct">Para mañana</span></div>${nl}
-   <div class="addrow"><input type="text" id="gin" placeholder="Algo que quiero cumplir mañana" onkeydown="if(event.key==='Enter')addGoal()"><button class="btn" onclick="addGoal()">Agregar</button></div></div>
+  <div class="card"><div class="ch"><span class="ct">Objetivos de hoy</span><span class="badge">${goals.filter(g=>g.done).length}/${goals.length}</span></div>${gl}</div>
+  <div class="card"><div class="ch"><span class="ct">Objetivos para mañana</span></div>${nl}
+   <div class="addrow"><input type="text" id="gin" placeholder="Un objetivo para mañana" onkeydown="if(event.key==='Enter')addGoal()"><button class="btn" onclick="addGoal()">Agregar</button></div></div>
   <div class="card"><div class="ch"><span class="ct">Nota del día</span></div>
    <textarea placeholder="Cómo quedó el entreno, agujetas, algo que comiste distinto..." oninput="upd(d=>d.note=this.value,false)">${esc(d.note)}</textarea></div>
  </div></div>`}
@@ -619,27 +620,19 @@ function barChart(keys,fn,max,color,target){const W=320,H=130,L=22,R=8,Tp=8,B=20
   s+=`<rect x="${x(i)-Math.max(bw*.32,1)}" y="${y(hh)}" width="${Math.max(bw*.64,2)}" height="${Tp+ph-y(hh)}" rx="${bw>6?3:1}" fill="${c}"/>`});
  if(target)s+=`<line x1="${L}" x2="${W-R}" y1="${y(target)}" y2="${y(target)}" stroke="#BA7517" stroke-dasharray="4 3"/>`;
  return s+axisLbl(keys,x,H)+'</svg>'}
-function fitData(){const all=Object.keys(db).sort();if(!all.length)return{};
- const t=todayKey(),out={};let v=0,k=all[0];
- while(k<=t){const tr=!!db[k]&&db[k].train==='train';
-  if(tr)v+=1;else if(k<t)v=Math.max(0,v-0.5);
-  out[k]={v,tr};k=addDays(k,1)}
- return out}
-function fitCard(keys){const D=fitData(),pts=keys.filter(k=>D[k]);
+function fitCard(keys){const pts=[];let n=0;
+ Object.keys(db).sort().forEach(k=>{if(db[k]&&db[k].train==='train'){n++;if(keys.includes(k))pts.push({k,v:n})}});
  if(!pts.length)return '';
- const W=320,H=170,L=26,R=8,Tp=10,B=20,pw=W-L-R,ph=H-Tp-B,n=pts.length;
- const mx=Math.max(4,Math.ceil(Math.max(...pts.map(k=>D[k].v)))),x=i=>L+(n===1?pw/2:i*pw/(n-1)),y=v=>Tp+ph-(v/mx)*ph;
- let sv=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:640px;display:block;margin:0 auto">`;
- [0,mx/2,mx].forEach(v=>sv+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#E6E7E1"/><text x="${L-5}" y="${y(v)+3}" text-anchor="end">${Math.round(v*10)/10}</text>`);
- sv+=`<polyline fill="none" stroke="#0F6E56" stroke-width="2.2" stroke-linejoin="round" points="${pts.map((k,i)=>x(i)+','+y(D[k].v)).join(' ')}"/>`;
- const r=n>45?2:3.4;
- pts.forEach((k,i)=>{const cx=x(i),cy=y(D[k].v);
-  sv+=(!D[k].tr&&k===todayKey())?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#9AA" stroke-width="1.4"/>`:D[k].tr?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1D9E75" stroke="#fff" stroke-width="1"/>`
-   :`<path d="M${cx-r} ${cy-r}L${cx+r} ${cy+r}M${cx+r} ${cy-r}L${cx-r} ${cy+r}" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>`});
- sv+=axisLbl(pts,x,H)+'</svg>';
- const last=D[pts[pts.length-1]].v,first=D[pts[0]].v,diff=last-first;
- return `<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">Progreso total de entrenamiento</span><span class="badge ${diff<0?'amber':''}">${diff>=0?'▲ +':'▼ '}${f1(diff)} en el período</span></div>
-  ${sv}<div class="legend"><span><i style="background:#1D9E75;border-radius:50%"></i>Entrenó (+1)</span><span><span style="color:#C0392B;font-weight:800">✕</span> No entrenó (−0,5)</span><span>Puntos acumulados: <b>${f1(last)}</b></span></div></div>`}
+ const base=n-pts.length,W=320,H=170,L=26,R=10,Tp=10,B=20,pw=W-L-R,ph=H-Tp-B;
+ const t0=fromKey(pts[0].k).getTime(),t1=fromKey(pts[pts.length-1].k).getTime(),span=Math.max(1,t1-t0);
+ const x=k=>pts.length===1?L+pw/2:L+((fromKey(k).getTime()-t0)/span)*pw;
+ const mx=Math.max(3,pts[pts.length-1].v),mn=Math.max(0,pts[0].v-1),y=v=>Tp+ph-((v-mn)/(mx-mn))*ph;
+ let sv=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:520px;display:block;margin:0 auto">`;
+ [mn,(mn+mx)/2,mx].forEach(v=>sv+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#E6E7E1"/><text x="${L-5}" y="${y(v)+3}" text-anchor="end">${Math.round(v)}</text>`);
+ sv+=`<polyline fill="none" stroke="#0F6E56" stroke-width="1.6" stroke-linejoin="round" points="${pts.map(p=>x(p.k)+','+y(p.v)).join(' ')}"/>`;
+ pts.forEach(p=>sv+=`<circle cx="${x(p.k)}" cy="${y(p.v)}" r="2.2" fill="#0F6E56"/>`);
+ sv+=axisLbl(pts.map(p=>p.k),i=>x(pts[i].k),H)+'</svg>';
+ return `<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">Entrenamientos acumulados</span><span class="badge">${pts[pts.length-1].v} en total</span></div>${sv}</div>`}
 function vProgreso(){const keys=keysBack(range,todayKey()),prev=keysBack(range,addDays(todayKey(),-range));
  const S=stats(keys),P=stats(prev),wk=range/7;
  const kp=(l,n,sub,tr)=>`<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="sub">${sub||''}</div>${tr||''}</div>`;
@@ -670,7 +663,7 @@ function vProgreso(){const keys=keysBack(range,todayKey()),prev=keysBack(range,a
 
 /* ---------- FOCO (pomodoro + sonidos) ---------- */
 const TRACKS=[['foco-1','🎼','Instrumental para concentrarse'],['foco-2','🎶','Relajante anti-estrés'],['foco-3','🌧️','Lluvia (pomodoro)'],['foco-4','⛈️','Lluvia y truenos']];
-const PRESETS=[[25,5],[30,5],[50,10]];
+const PRESETS=[[25,5],[30,15],[40,15]];
 let fo=Object.assign({w:25,b:5,phase:'w',left:25*60000,end:null,run:false,track:'',vol:.6},JSON.parse(localStorage.getItem('fabian_foco')||'{}'));
 const au=new Audio();au.loop=true;au.preload='none';let wl=null;
 function foSave(){try{localStorage.setItem('fabian_foco',JSON.stringify(fo))}catch(e){}}
@@ -678,15 +671,15 @@ function foLeft(){return fo.run?Math.max(0,fo.end-Date.now()):fo.left}
 async function foLock(){try{if(fo.run&&navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}}
 function foUnlock(){try{if(wl)wl.release()}catch(e){}wl=null}
 function foStart(){fo.run=true;fo.end=Date.now()+fo.left;foSave();foLock();if(fo.track){if(!au.getAttribute('src')){au.src='audio/'+fo.track+'.mp3';au.volume=fo.vol}if(au.paused)au.play().catch(()=>{})}render()}
-function foPause(){fo.left=foLeft();fo.run=false;fo.end=null;foSave();foUnlock();render()}
-function foReset(){fo.run=false;fo.phase='w';fo.left=fo.w*60000;fo.end=null;foSave();foUnlock();render()}
-function foPreset(i){fo.w=PRESETS[i][0];fo.b=PRESETS[i][1];fo.run=false;fo.phase='w';fo.left=fo.w*60000;fo.end=null;foSave();foUnlock();render()}
+function foPause(){try{au.pause()}catch(e){}fo.left=foLeft();fo.run=false;fo.end=null;foSave();foUnlock();render()}
+function foReset(){try{au.pause()}catch(e){}fo.run=false;fo.phase='w';fo.left=fo.w*60000;fo.end=null;foSave();foUnlock();render()}
+function foPreset(i){try{au.pause()}catch(e){}fo.w=PRESETS[i][0];fo.b=PRESETS[i][1];fo.run=false;fo.phase='w';fo.left=fo.w*60000;fo.end=null;foSave();foUnlock();render()}
 function foTrack(t){fo.track=t;if(t){au.src='audio/'+t+'.mp3';au.volume=fo.vol;au.play().catch(()=>toast('Tocá ▶ para activar el sonido'))}else{au.pause();au.removeAttribute('src')}foSave();render()}
 function foVol(v){fo.vol=+v;au.volume=fo.vol;foSave()}
 function foDone(){const was=fo.phase;
  if(was==='w'){updK(todayKey(),d=>{d.pomos=(d.pomos||0)+1});fo.phase='b';fo.left=fo.b*60000;fo.run=true;fo.end=Date.now()+fo.left}
- else{fo.phase='w';fo.left=fo.w*60000;fo.run=false;fo.end=null;foUnlock()}
- foSave();chime();try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
+ else{fo.phase='w';fo.left=fo.w*60000;fo.run=false;fo.end=null;foUnlock();try{au.pause()}catch(e){}}
+ foSave();chime();setTimeout(chime,2200);try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
  const msg=was==='w'?'¡Bloque de foco completado! Descansá '+fo.b+' min 🎉':'Descanso terminado. ¿Arrancamos otro bloque?';
  toast(msg);try{if('Notification' in window&&Notification.permission==='granted')new Notification('Foco',{body:msg})}catch(e){}
  render()}
@@ -711,7 +704,9 @@ function vFoco(){const d=day(),total=(fo.phase==='w'?fo.w:fo.b)*60000,pc=Math.ro
 
 /* ---------- HISTORIAL ---------- */
 function shiftMonth(n){const [y,m]=calMonth.split('-').map(Number),d=new Date(y,m-1+n,1);calMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');calSel=null;showTrain=null;render()}
+function delDay(k){if(!confirm('¿Borrar todo lo registrado de este día?'))return;delete db[k];persist();try{if(sb&&sbUser)sb.from('days').delete().eq('user_id',sbUser.id).eq('day',k).then(()=>{})}catch(e){}render()}
 function dayDetail(k){const d=db[k],dt=fromKey(k),lab=DAYS[dt.getDay()]+' '+dt.getDate()+' de '+MONTHS[dt.getMonth()];
+ if(d&&k>todayKey()){const g=(d.goals||[]).map(x=>`<div class="snack"><span class="tx">${esc(x.t)}</span></div>`).join('');return `<div class="card"><div class="ct">${lab}</div><div class="sub" style="margin:8px 0">Todavía no llegó este día.${g?' Objetivos cargados:':''}</div>${g}<button class="btn ghost" style="width:100%;margin-top:10px" onclick="delDay('${k}')">Borrar día</button></div>`}
  if(!d)return `<div class="card"><div class="ct">${lab}</div><div class="empty">Sin registro este día.</div><button class="btn ghost" style="width:100%" onclick="goDay('${k}','hoy')">Cargar este día</button></div>`;
  const tg=[];if(d.train==='train')tg.push('<span class="tag g">💪 Entrenó</span>');if(d.train==='rest')tg.push('<span class="tag">😴 Descanso</span>');
  if(d.habits.camine)tg.push('<span class="tag b">🚶 Caminó</span>');if((d.sess||d.ph)&&sessMs(d,k)>60000)tg.push('<span class="tag b">⏱ '+(d.ph?PH.map(p=>PHN[p].slice(0,5)+'. '+fmt(phMs(d,p,k))).join(' · '):fmt(sessMs(d,k)))+'</span>');if(d.habits.respiro)tg.push('<span class="tag">🌬️ Respiraciones</span>');
@@ -726,12 +721,12 @@ function dayDetail(k){const d=db[k],dt=fromKey(k),lab=DAYS[dt.getDay()]+' '+dt.g
  return `<div class="card"><div class="ch"><span class="ct">${lab}</span><span class="badge">${Math.round(score(d)*100)}%</span></div>
   <div class="chipline">${mt.join('')}</div><div class="chipline">${tg.join('')}</div>
   ${exl}${meals}${sn}${d.note?`<div class="dl-t"><b>Nota:</b> <i>${esc(d.note)}</i></div>`:''}
-  <div class="foot" style="margin-top:14px"><button class="btn ghost" onclick="goDay('${k}','hoy')">Editar día</button><button class="btn ghost" onclick="goDay('${k}','comidas')">Ver comidas</button>${dias.length?`<button class="btn ghost" onclick="showTrain=showTrain==='${k}'?null:'${k}';render()">${showTrain===k?'Ocultar':'Ver'} entrenamiento</button>`:''}</div></div>`}
+  <div class="foot" style="margin-top:14px"><button class="btn ghost" onclick="goDay('${k}','hoy')">Editar día</button><button class="btn ghost" onclick="goDay('${k}','comidas')">Ver comidas</button><button class="btn ghost" onclick="delDay('${k}')">Borrar día</button>${dias.length?`<button class="btn ghost" onclick="showTrain=showTrain==='${k}'?null:'${k}';render()">${showTrain===k?'Ocultar':'Ver'} entrenamiento</button>`:''}</div></div>`}
 function goDay(k,t){cur=k;tab=t;render();window.scrollTo(0,0)}
 function vHistorial(){const [y,m]=calMonth.split('-').map(Number),first=new Date(y,m-1,1),start=(first.getDay()+6)%7,dim=new Date(y,m,0).getDate();
  let cells=['L','M','X','J','V','S','D'].map(l=>`<div class="h">${l}</div>`).join('')+'<button class="e"></button>'.repeat(start);
  for(let i=1;i<=dim;i++){const k=calMonth+'-'+String(i).padStart(2,'0'),d=db[k],sc=d?score(d):null;
-  const lv=sc==null?'':sc>=.85?'l4':sc>=.6?'l3':sc>=.35?'l2':'l1';
+  const lv=!sc?'':sc>=.85?'l4':sc>=.6?'l3':sc>=.35?'l2':'l1';
   cells+=`<button class="${lv} ${k===todayKey()?'td':''} ${k===calSel?'sel':''}" onclick="calSel='${k}';showTrain=null;render()">${i}</button>`}
  const ks=Object.keys(db).filter(k=>k.startsWith(calMonth)),ms=stats(ks);
  return `<div class="g c2"><div class="card"><div class="mnav"><button class="ib" onclick="shiftMonth(-1)">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="ib" onclick="shiftMonth(1)">›</button></div>
@@ -814,7 +809,7 @@ function render(){
  const sy=window.scrollY;document.getElementById('view').innerHTML=v();window.scrollTo(0,sy);fitEnt()}
 /* ---------- entreno a pantalla completa ---------- */
 function applyZ(z){const r=document.documentElement.style;r.setProperty('--z',z.toFixed(3));r.setProperty('--vh',(innerHeight/z)+'px')}
-function setZoom(){if(tab!=='entreno'){applyZ(1);return}let z=innerWidth>=900?Math.min(1.6,Math.max(1,innerWidth/1400)):1;applyZ(z);
+function setZoom(){let z=innerWidth>=900?Math.min(1.6,Math.max(1,innerWidth/1400)):1;applyZ(z);
  if(innerWidth<900||tab==='entreno')return;
  const v=document.getElementById('view'),ok=()=>{const r=v.getBoundingClientRect();return r.bottom+40<=innerHeight&&document.documentElement.scrollWidth<=innerWidth+1};
  if(!ok())return;let lo=z,hi=Math.min(2.6,innerWidth/900);if(hi<=lo)return;
