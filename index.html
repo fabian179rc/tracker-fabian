@@ -601,14 +601,14 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
   </div>
  <div class="col">
  <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span class="badge amber">${dn[sg]}/${tt[sg]}</span></div>${raw(sg,SL)}</div>
- ${notesCard(d,ro)}</div></div>`}
-function notesCard(d,ro){const L=d.enotes||[];if(ro&&!L.length)return '';
- const li=L.map((s,i)=>`<div class="snack"><span class="tm">${esc(s.time||'')}</span><span class="tx">${esc(s.t)}</span>${ro?'':`<button onclick="upd(d=>d.enotes.splice(${i},1))">×</button>`}</div>`).join('')||'<div class="empty" style="padding:6px">Sin notas todavía.</div>';
+ ${notesCard(d,ro,dayIdx)}</div></div>`}
+function notesCard(d,ro,x){const all=d.enotes||[],own=[0,1,2].find(i=>dayTouched(d,i)),L=all.filter(n=>(n.x!=null?n.x:own!=null?own:0)===x);if(ro&&!L.length)return '';
+ const li=all.map((s,i)=>L.includes(s)?`<div class="snack"><span class="tm">${esc(s.time||'')}</span><span class="tx">${esc(s.t)}</span>${ro?'':`<button onclick="upd(d=>d.enotes.splice(${i},1))">×</button>`}</div>`:'').join('')||'<div class="empty" style="padding:6px">Sin notas todavía.</div>';
  return `<div class="card compact nt"><div class="ch"><span class="ct">📝 Notas del entreno</span><span class="badge amber">${L.length}</span></div><div class="nl">${li}</div>
   ${ro?'':`<div class="addrow"><input type="text" id="ntin" placeholder="Cambié un ejercicio, peso, molestia…" onkeydown="if(event.key==='Enter')addNote()"><button class="btn" onclick="addNote()">Agregar</button></div>`}</div>`}
 function addNote(){const i=document.getElementById('ntin'),t=i.value.trim();if(!t)return;
  const n=new Date(),time=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
- upd(d=>{d.enotes=d.enotes||[];d.enotes.push({t,time})})}
+ upd(d=>{d.enotes=d.enotes||[];d.enotes.push({t,time,x:exDay})})}
 function vEntreno(){return trainView(day(),exDay,false)}
 function trainDay(d){const c=[0,1,2].map(n=>({n,h:doneEntries(d).filter(x=>x.g==='d'+n).length})).filter(x=>x.h>0).sort((a,b)=>b.h-a.h);return c.length?c[0].n:null}
 function trainSection(){const k=showTrain;if(!k||!db[k])return '';const n=trainDay(db[k]);if(n==null)return '';
