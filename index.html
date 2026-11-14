@@ -541,9 +541,15 @@ function timerCard(d){const live=cur===todayKey(),h=d.ph,st=!h?0:h.cur==='end'?3
  const mu=`<span class="mus"><button class="tbn" title="Música para entrenar" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle('open')">🎵</button><span class="mpop"><a href="#" onclick="event.preventDefault();musica(\'4ar57TrOORCgt7XNewPzQX\',\'🔥 Reggaetón\')">🔥 Reggaetón</a><a href="#" onclick="event.preventDefault();musica(\'5xWtbXgZhKU0JxKnOULKdC\',\'💃 Cumbia\')">💃 Cumbia</a></span></span>`;
  return `<div class="card tm">${PH.map(cell).join('')}<div class="tc tot"><small>Total</small><b id="sessT">${fmt(sessMs(d,cur))}</b></div>${b}${rs}${mu}</div>`}
 /* ---------- música (Spotify incrustado, persiste entre renders) ---------- */
-let mdock=null;function musicaMin(){mdock.classList.toggle('min')}function musicaCerrar(){mdock.classList.remove('on');mdock.querySelector('iframe').src='about:blank'}
+let mdock=null;function musicaPos(){if(!mdock||!mdock.classList.contains('on'))return;const n=document.querySelector('.nt'),s=mdock.style;
+ if(n&&innerWidth>=900){const r=n.getBoundingClientRect(),z=parseFloat(getComputedStyle(document.body).zoom)||1;s.position='fixed';s.bottom='auto';s.width=(r.width/z)+'px';s.left=(r.left/z)+'px';
+  const hh=mdock.getBoundingClientRect().height;s.top=(Math.max(0,Math.min(r.top,innerHeight-hh-8))/z)+'px'}
+ else{s.position='';s.left='';s.top='';s.width='';s.bottom=''}}
+addEventListener('scroll',musicaPos,{passive:true});
+addEventListener('resize',musicaPos);
+function musicaMin(){mdock.classList.toggle('min')}function musicaCerrar(){mdock.classList.remove('on');mdock.querySelector('iframe').src='about:blank'}
 function musica(id,nombre){if(!mdock){mdock=document.createElement('div');mdock.className='mdock';mdock.innerHTML='<div class="mh"><b></b><button title="Achicar / agrandar" onclick="musicaMin()">▁</button><button title="Cerrar" onclick="musicaCerrar()">✕</button></div><iframe allow="autoplay; encrypted-media; clipboard-write" loading="lazy"></iframe>';document.body.appendChild(mdock)}
- mdock.querySelector('b').textContent='🎵 '+nombre;mdock.querySelector('iframe').src='https://open.spotify.com/embed/playlist/'+id+'?theme=0';mdock.classList.add('on');mdock.classList.remove('min');
+ mdock.querySelector('b').textContent='🎵 '+nombre;mdock.querySelector('iframe').src='https://open.spotify.com/embed/playlist/'+id+'?theme=0';mdock.classList.add('on');mdock.classList.remove('min');musicaPos();
  document.querySelectorAll('.mpop.open').forEach(x=>x.classList.remove('open'))}
 function resetToday(){if(!confirm('¿Borrar todo el progreso de entreno de hoy (series, tiempos y cronómetro)?'))return;
  upd(d=>{d.wk={};d.done={};d.tm={};d.sess=null;d.ph=null;d.last=null;d.lastEx=null;if(d.train==='train')d.train=null});toast('Entreno de hoy reiniciado')}
@@ -838,7 +844,7 @@ const ICON={hoy:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><poly
  foco:'<circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/>',
  historial:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'};
 const TABS=[['hoy','Hoy'],['comidas','Comidas'],['entreno','Entreno'],['progreso','Progreso'],['foco','Foco'],['historial','Historial']];
-function render(){
+function render(){requestAnimationFrame(()=>requestAnimationFrame(musicaPos));
  document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button class="${tab===t[0]?'on':''}" onclick="tab='${t[0]}';render();window.scrollTo(0,0)"><svg viewBox="0 0 24 24">${ICON[t[0]]}</svg>${t[1]}</button>`).join('');
  const dn=document.getElementById('datenav');
  if(['hoy','comidas','entreno'].includes(tab)){const dt=fromKey(cur),isT=cur===todayKey();
