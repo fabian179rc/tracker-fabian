@@ -560,7 +560,7 @@ function tick(){const t=todayKey(),d=db[t];
  document.querySelectorAll('.lr').forEach(x=>{if(d&&d.last&&running(d))x.textContent='descanso '+fmt(Date.now()-d.last)})}
 setInterval(tick,1000);document.addEventListener('visibilitychange',tick);
 /* ---------- qué día toca ---------- */
-function dayDone(d,n){return WORKOUTS[n].ex.every((e,i)=>timesDone(d,'d'+n,i)>0)}
+function dayDone(d,n){return WORKOUTS[n].ex.every((e,i)=>timesDone(d,'d'+n,i)>0||setsDone({wk:d.wk||{}},'d'+n,i,e)>0)}
 function dayTouched(d,n){const g='d'+n;return Object.keys(d.done||{}).some(k=>k.startsWith(g+':'))||Object.values((d.wk||{})[g]||{}).some(Boolean)}
 function cycleState(){const t=todayKey();let marks=new Set(),prev=-1,before=-1;
  Object.keys(db).sort().forEach(k=>{[0,1,2].forEach(n=>{if(!dayDone(db[k],n))return;
