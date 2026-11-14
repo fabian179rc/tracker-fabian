@@ -560,9 +560,9 @@ function exItem(e,group,i,count,times,ro,tm,lr){
  const rem=e.sets-count,part=count>0&&!ro,was=times>0;
  const th=e.imgs.map(x=>`<img src="${IMG[x[0]]||''}" title="${x[1]}" alt="${esc(e.name)} — ${x[1]}" onclick="event.stopPropagation();zoom('${x[0]}')">`).join('');
  const pips=e.sets>1&&!ro?`<span class="pips">${Array.from({length:e.sets},(_,k)=>`<i class="${k<count?'f':''}"></i>`).join('')}</span>`:'';
- const chip=was?(ro?`<span class="dn">✓ hecho${times>1?' ×'+times:''}</span>`:`<span class="dn" title="Guardado en Progreso e Historial. Tocá la ✕ para deshacer" onclick="event.stopPropagation();undoEx('${group}',${i})">✓${times>1?' ×'+times:''} <b>✕</b></span>`):(ro?`<span class="dn no">no hecho</span>`:'');
- const circ=ro?(was?'✓':'–'):rem;
- return `<div class="ex${ro&&!was?' skipped':''}"><div class="ex-top"${ro?'':` onclick="tapEx('${group}',${i},${e.sets})"`}><div class="sc ${ro?(was?'on':''):part?'part':was?'was':''}"${ro?'':' title="Tocá para descontar una serie"'}>${circ}</div>
+ const chip=was?(ro?`<span class="dn">✓ hecho${times>1?' ×'+times:''}</span>`:`<span class="dn" title="Guardado en Progreso e Historial. Tocá la ✕ para deshacer" onclick="event.stopPropagation();undoEx('${group}',${i})">✓${times>1?' ×'+times:''} <b>✕</b></span>`):(ro?(count>0?`<span class="dn" style="background:#fff3d6;color:#9a6a00">${count} de ${e.sets} series</span>`:`<span class="dn no">no hecho</span>`):'');
+ const circ=ro?(was?'✓':count>0?count+'/'+e.sets:'–'):rem;
+ return `<div class="ex${ro&&!was&&!count?' skipped':''}"><div class="ex-top"${ro?'':` onclick="tapEx('${group}',${i},${e.sets})"`}><div class="sc ${ro?(was?'on':count>0?'part':''):part?'part':was?'was':''}"${ro?'':' title="Tocá para descontar una serie"'}>${circ}</div>
   <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div><div class="exm">${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}</div>${isTip(group)?'':`<div class="ex-desc">${e.desc}</div>`}</div>
   <div class="thumbs">${th}</div>${isTip(group)?`<span class="iw"><button class="info" onclick="event.stopPropagation();this.classList.toggle('open')" onmouseleave="this.classList.remove('open')">i</button><div class="tip"><b>${e.name}</b><br>${e.desc}</div></span>`:''}</div></div>`}
 function tapEx(g,i,sets){let fin=false,won=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.done=d.done||{};let v=d.wk[g][i];v=v===true?sets:(+v||0);
@@ -580,7 +580,7 @@ function undoEx(g,i){upd(d=>{d.done=d.done||{};const k=g+':'+i,n=(+d.done[k]||0)
 function zoom(k){document.getElementById('lbimg').src=IMG[k];document.getElementById('lb').classList.add('show')}
 function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+dayIdx,SL=STRETCH[dayIdx];
  const sum=a=>a.reduce((x,y)=>x+y,0);
- const cnt=(grp,list)=>list.map((e,i)=>timesDone(d,grp,i)>0?e.sets:(ro?0:setsDone(d,grp,i,e)));
+ const cnt=(grp,list)=>list.map((e,i)=>timesDone(d,grp,i)>0?e.sets:setsDone(d,grp,i,e));
  const wg='warm'+dayIdx,ng='neck'+dayIdx,hg='hipo'+dayIdx,parts=[[wg,WARMUP],[g,w.ex],[ng,NECK],[sg,SL]];
  const dn=Object.fromEntries(parts.map(([grp,l])=>[grp,sum(cnt(grp,l))])),tt=Object.fromEntries(parts.map(([grp,l])=>[grp,sum(l.map(e=>e.sets))]));
  const T=sum(Object.values(tt)),D=sum(Object.values(dn)),pct=Math.round(D/T*100);
