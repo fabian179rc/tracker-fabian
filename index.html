@@ -89,8 +89,8 @@ textarea:focus,input[type=text]:focus{border-color:var(--brand2);background:#fff
 .ex:last-child{border-bottom:none;padding-bottom:0}.ex:first-child{padding-top:0}
 .ex-top{display:flex;align-items:flex-start;gap:10px;cursor:pointer;user-select:none}
 .ex-main{flex:1;min-width:0}
-.ex-name{font-weight:600;font-size:14px}.ex.done .ex-name{color:var(--muted);text-decoration:line-through}
-.ex-ser{font-size:12px;font-weight:600;color:var(--brand);margin-top:1px}
+.ex-name{font-weight:700;font-size:17px}.ex.done .ex-name{color:var(--muted);text-decoration:line-through}
+.ex-ser{font-size:15px;font-weight:700;color:var(--brand);margin-top:1px}
 .ex-desc{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.4}
 .thumbs{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:180px}
 .thumbs img{width:56px;height:56px;border-radius:10px;display:block;cursor:zoom-in;border:1px solid var(--line);background:var(--brand-bg)}
@@ -268,9 +268,10 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
  body.fit .g.ent .badge{font-size:.75em}
  body.fit .g.ent .ex{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:.2em 0}
  body.fit .g.ent .ex-top{gap:.6em;align-items:center}
- body.fit .g.ent .ex-name{font-size:1em;font-weight:700}
- body.fit .g.ent .ex-ser{font-size:.85em}
- body.fit .g.ent .ex-desc{font-size:.78em;line-height:1.25;margin-top:.1em}
+ body.fit .g.ent .ex-name{font-size:1.4em;font-weight:700;line-height:1.15}
+ body.fit .g.ent .ex-ser{font-size:1.2em;font-weight:700}
+ body.fit .g.ent>.card:nth-child(2) .ex-desc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ body.fit .g.ent .ex-desc{font-size:.66em;line-height:1.25;margin-top:.1em}
  body.fit .g.ent .thumbs{flex-wrap:nowrap;max-width:none;gap:.3em}
  body.fit .g.ent .thumbs img,body.fit .g.ent .compact .thumbs img{width:2.7em;height:2.7em;border-radius:.5em}
  body.fit .g.ent .card:nth-child(2) .thumbs img{width:3.4em;height:3.4em}
@@ -577,7 +578,7 @@ function exItem(e,group,i,count,times,ro,tm,lr){
  const chip=was?(ro?`<span class="dn">✓ hecho${times>1?' ×'+times:''}</span>`:`<span class="dn" title="Guardado en Progreso e Historial. Tocá la ✕ para deshacer" onclick="event.stopPropagation();undoEx('${group}',${i})">✓${times>1?' ×'+times:''} <b>✕</b></span>`):(ro?(count>0?`<span class="dn" style="background:#fff3d6;color:#9a6a00">${count} de ${e.sets} series</span>`:`<span class="dn no">no hecho</span>`):'');
  const circ=ro?(was?'✓':count>0?count+'/'+e.sets:'–'):rem;
  return `<div class="ex${ro&&!was&&!count?' skipped':''}"><div class="ex-top"${ro?'':` onclick="tapEx('${group}',${i},${e.sets})"`}><div class="sc ${ro?(was?'on':count>0?'part':''):part?'part':was?'was':''}"${ro?'':' title="Tocá para descontar una serie"'}>${circ}</div>
-  <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div><div class="exm">${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}</div>${isTip(group)?'':`<div class="ex-desc">${e.desc}</div>`}</div>
+  <div class="ex-main"><div class="ex-name">${e.name}</div><div class="ex-ser">${e.series}</div><div class="exm">${pips}${e.sets>1&&part?`<span class="rem">quedan ${rem}</span>`:''}${chip}${tm&&tm.t?`<span class="tmc" title="${tm.s.map(fmt).join(' · ')}">⏱ ${fmt(tm.t)}</span>`:''}${lr?'<span class="lr"></span>':''}</div>${isTip(group)?'':`<div class="ex-desc" title="${esc(String(e.desc).replace(/<[^>]*>/g,''))}">${e.desc}</div>`}</div>
   <div class="thumbs">${th}</div>${isTip(group)?`<span class="iw"><button class="info" onclick="event.stopPropagation();this.classList.toggle('open')" onmouseleave="this.classList.remove('open')">i</button><div class="tip"><b>${e.name}</b><br>${e.desc}</div></span>`:''}</div></div>`}
 function tapEx(g,i,sets){let fin=false,won=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.done=d.done||{};let v=d.wk[g][i];v=v===true?sets:(+v||0);
  if(cur===todayKey()){const now=Date.now();
