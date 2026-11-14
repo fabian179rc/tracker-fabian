@@ -207,6 +207,7 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .dn.no{background:var(--bg);color:var(--muted);cursor:default}
 .foot{flex-wrap:wrap}
 .tm{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0}.tm .tv{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}.tm .tv.run{color:var(--brand)}
+.mus{position:relative;display:inline-block}.mpop{display:none;position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1.5px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:4px;z-index:30;white-space:nowrap}.mpop.open{display:block}.mpop a{display:block;padding:8px 12px;font-size:13px;font-weight:700;color:var(--brand);text-decoration:none;border-radius:8px}.mpop a:hover{background:var(--brand-bg)}
 .tbn{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:4px 9px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--brand)}
 .tmc{margin-left:8px;font-size:11px;font-weight:700;color:var(--muted)}.lr{margin-left:8px;font-size:11px;font-weight:700;color:var(--amber)}
 .dtabs button{position:relative}.dtabs button.ok{}
@@ -536,7 +537,8 @@ function timerCard(d){const live=cur===todayKey(),h=d.ph,st=!h?0:h.cur==='end'?3
  const cell=p=>`<div class="tc${h&&h.cur===p?' cur':''}${h&&h.cur===p&&st===1?' run':''}${h&&phDone(d,exDay,p)?' fin':''}"><small>${PHN[p]}</small><b id="ph_${p}">${fmt(phMs(d,p,cur))}</b></div>`;
  const b=!live?'':st===0?'<button class="tbn" onclick="sessStart()">▶ Iniciar</button>':st===3?'<button class="tbn" onclick="sessResume()">▶ Reanudar</button>':`<button class="tbn" title="${st===2?'Seguir':'Pausa'}" onclick="sessPause()">${st===2?'▶':'⏸'}</button><button class="tbn" title="Terminar entreno" onclick="sessEnd()">■</button>`;
  const rs=live&&(h||Object.keys(d.done||{}).length)?'<button class="tbn" title="Borrar el progreso de entreno de hoy" onclick="resetToday()">↺</button>':'';
- return `<div class="card tm">${PH.map(cell).join('')}<div class="tc tot"><small>Total</small><b id="sessT">${fmt(sessMs(d,cur))}</b></div>${b}${rs}</div>`}
+ const mu=`<span class="mus"><button class="tbn" title="Música para entrenar" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle('open')">🎵</button><span class="mpop"><a href="https://open.spotify.com/playlist/4ar57TrOORCgt7XNewPzQX" target="_blank" rel="noopener">🔥 Reggaetón</a><a href="https://open.spotify.com/playlist/5xWtbXgZhKU0JxKnOULKdC" target="_blank" rel="noopener">💃 Cumbia</a></span></span>`;
+ return `<div class="card tm">${PH.map(cell).join('')}<div class="tc tot"><small>Total</small><b id="sessT">${fmt(sessMs(d,cur))}</b></div>${b}${rs}${mu}</div>`}
 function resetToday(){if(!confirm('¿Borrar todo el progreso de entreno de hoy (series, tiempos y cronómetro)?'))return;
  upd(d=>{d.wk={};d.done={};d.tm={};d.sess=null;d.ph=null;d.last=null;d.lastEx=null;if(d.train==='train')d.train=null});toast('Entreno de hoy reiniciado')}
 function tick(){const t=todayKey(),d=db[t];
