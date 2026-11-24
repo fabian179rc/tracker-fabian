@@ -208,7 +208,7 @@ table.wk td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font
 .foot{flex-wrap:wrap}
 .tm{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0}.tm .tv{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}.tm .tv.run{color:var(--brand)}
 .mus{position:relative;display:inline-block}.mpop{display:none;position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1.5px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:4px;z-index:30;white-space:nowrap}.mpop.open{display:block}.mpop a{display:block;padding:8px 12px;font-size:13px;font-weight:700;color:var(--brand);text-decoration:none;border-radius:8px}.mpop a:hover{background:var(--brand-bg)}
-.mdock{position:fixed;left:8px;bottom:64px;width:min(340px,calc(100vw - 16px));background:#fff;border:1.5px solid var(--line);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:40;display:none;overflow:hidden}.mdock.on{display:block}.mdock .mh{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:12px;font-weight:700;color:var(--brand)}.mdock .mh b{flex:1}.mdock .mh button{border:0;background:none;font-size:15px;cursor:pointer;color:var(--muted)}.mdock iframe{display:block;width:100%;height:152px;border:0}.mdock.min iframe{height:0;visibility:hidden}
+.mdock{position:fixed;left:8px;bottom:64px;width:min(340px,calc(100vw - 16px));background:#fff;border:1.5px solid var(--line);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:40;display:none;overflow:hidden}.mdock.on{display:block}.mdock .mh{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:12px;font-weight:700;color:var(--brand)}.mdock .mh b{flex:1}.mdock .mh button{border:0;background:none;font-size:15px;cursor:pointer;color:var(--muted)}.mdock iframe{display:block;width:100%;height:352px;border:0}.mdock.min iframe{height:0;visibility:hidden}
 .tbn{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:4px 9px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--brand)}
 .tmc{margin-left:8px;font-size:11px;font-weight:700;color:var(--muted)}.lr{margin-left:8px;font-size:11px;font-weight:700;color:var(--amber)}
 .dtabs button{position:relative}.dtabs button.ok{}
@@ -413,7 +413,7 @@ function vHoy(){const d=day(),h=d.habits,sc=score(db[cur]);
   <div class="card"><div class="ch"><span class="ct">Cómo amaneciste</span></div>
    ${scale('Dolor de cuello / rigidez','neck')}${scale('Dolor de espalda / rigidez','back')}${scale('Energía','energy',true)}</div>
   <div class="card"><div class="ch"><span class="ct">Sueño</span><span class="badge ${d.sleepSet&&d.sleep>=7?'':'amber'}">${d.sleepSet&&d.sleep>=7?'Meta cumplida':'Meta: 7 hs'}</span></div>
-   <div class="sleepbox"><input type="number" inputmode="decimal" min="0" max="14" step="0.5" class="sleepin" placeholder="8" value="${d.sleepSet?d.sleep:''}" oninput="sleepType(this.value)"><span class="sleepu">hs</span>
+   <div class="sleepbox"><input type="number" inputmode="decimal" min="0" max="14" step="0.5" class="sleepin" placeholder="8" value="${d.sleepSet?d.sleep:8}" oninput="sleepType(this.value)"><span class="sleepu">hs</span>
    <button class="btn ${d.sleepSet&&d.sleep===8?'':'ghost'}" onclick="upd(d=>{d.sleep=8;d.sleepSet=true})">${d.sleepSet&&d.sleep===8?'✓ ':''}Dormí 8 hs</button></div>
    <div class="sub" style="margin-top:8px">${d.sleepSet?'Anotado: '+d.sleep+' hs':'Todavía sin anotar: escribí las horas o tocá el botón.'}</div></div>
  </div>
@@ -585,6 +585,7 @@ function tapEx(g,i,sets){let fin=false,won=false;upd(d=>{d.wk[g]=d.wk[g]||{};d.d
  if(v+1>=sets){d.wk[g][i]=0;d.done[g+':'+i]=(+d.done[g+':'+i]||0)+1;fin=true}else d.wk[g][i]=v+1;
  if(fin){const n=+g.replace(/\D/g,'');if(d.ph&&cur===todayKey()){if(phAdvance(d,n))won=true}else if(PH.every(p=>phDone(d,n,p)))d.train='train'}});
  if(won)celebrate();else if(fin)toast('✓ Ejercicio guardado en el historial')}
+function tapAll(g,n,k){const L=k==="w"?WARMUP:STRETCH[n];L.forEach((e,i)=>{const d=db[cur];if(timesDone(d,g,i)>0)return;const r=e.sets-setsDone(d,g,i,e);for(let j=0;j<r;j++)tapEx(g,i,e.sets)})}
 function undoEx(g,i){upd(d=>{d.done=d.done||{};const k=g+':'+i,n=(+d.done[k]||0)-1;if(n>0)d.done[k]=n;else delete d.done[k];if(d.wk[g])d.wk[g][i]=0;
  const h=d.ph;if(h&&cur===todayKey()){const dn=+g.replace(/\D/g,''),nx=PH.find(p=>!phDone(d,dn,p));
   if(nx&&(h.cur==='end'||PH.indexOf(nx)<PH.indexOf(h.cur))){const now=Date.now();
@@ -604,7 +605,7 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
  const top=ro?`<div class="toprow"><div class="card eq"><div class="ct">Entreno: Día ${dayIdx+1} — ${w.title.split('—')[1].trim()}${(d.sess||d.ph)&&sessMs(d,showTrain)>0?' · ⏱ '+fmt(sessMs(d,showTrain))+(d.ph?' ('+PH.map(p=>PHN[p]+' '+fmt(phMs(d,p,showTrain))).join(' · ')+')':''):''}</div></div>${prog}</div>`
   :`<div class="toprow"><div class="dtabs">${WORKOUTS.map((x,i)=>`<button class="${i===dayIdx?'on':''}" onclick="exDay=${i};render()">${cs.marks.has(i)?'<span class="ck">✓</span>':''}${live&&i===suggestDay()&&!(tdy&&dayDone(tdy,i))?'<span class="hy">HOY TOCA</span>':''}Día ${i+1}<small>${['Total A','Espalda','Total B'][i]}</small></button>`).join('')}</div>${equipCard()}${timerCard(d)}${prog}</div>`;
  return `${top}
-  <div class="g c3 ent"><div class="card compact"><div class="ch"><span class="ct">Calentamiento · 10 min</span><span class="badge amber">${dn[wg]}/${tt[wg]}</span></div>
+  <div class="g c3 ent"><div class="card compact"><div class="ch"><span class="ct">Calentamiento · 10 min</span><span style="display:flex;gap:6px;align-items:center">${ro||dn[wg]>=tt[wg]?'':`<button class="tbn" title="Marcar todo el calentamiento como hecho" onclick="tapAll('${wg}',${dayIdx},'w')">✓ Todo</button>`}<span class="badge amber">${dn[wg]}/${tt[wg]}</span></span></div>
   ${raw(wg,WARMUP)}</div>
  <div class="card"><div class="ch"><span class="ct">${w.title}</span><span class="badge">${done}/${tot} series</span></div>
   <div class="bar" style="margin-bottom:10px"><i style="width:${Math.round(done/tot*100)}%"></i></div>
@@ -613,7 +614,7 @@ function trainView(d,dayIdx,ro){const w=WORKOUTS[dayIdx],g='d'+dayIdx,sg='s'+day
   ${ro&&!timesDone(d,hg,0)?'':`<div class="hp">${raw(hg,[HIPO])}</div>`}
   </div>
  <div class="col">
- <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span class="badge amber">${dn[sg]}/${tt[sg]}</span></div>${raw(sg,SL)}</div>
+ <div class="card compact"><div class="ch"><span class="ct">Estiramientos</span><span style="display:flex;gap:6px;align-items:center">${ro||dn[sg]>=tt[sg]?'':`<button class="tbn" title="Marcar todos los estiramientos como hechos" onclick="tapAll('${sg}',${dayIdx},'x')">✓ Todo</button>`}<span class="badge amber">${dn[sg]}/${tt[sg]}</span></span></div>${raw(sg,SL)}</div>
  ${notesCard(d,ro,dayIdx)}</div></div>`}
 function notesCard(d,ro,x){const all=d.enotes||[],own=[0,1,2].find(i=>dayTouched(d,i)),L=all.filter(n=>(n.x!=null?n.x:own!=null?own:0)===x);if(ro&&!L.length)return '';
  const li=all.map((s,i)=>L.includes(s)?`<div class="snack"><span class="tm">${esc(s.time||'')}</span><span class="tx">${esc(s.t)}</span>${ro?'':`<button onclick="upd(d=>d.enotes.splice(${i},1))">×</button>`}</div>`:'').join('')||'<div class="empty" style="padding:6px">Sin notas todavía.</div>';
