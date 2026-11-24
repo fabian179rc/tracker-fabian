@@ -634,7 +634,7 @@ const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const f1=v=>v==null?'—':(Math.round(v*10)/10).toString().replace('.',',');
 function keysBack(n,end){const a=[];for(let i=n-1;i>=0;i--)a.push(addDays(end,-i));return a}
 function stats(keys){const ds=keys.map(k=>db[k]).filter(Boolean),g=f=>ds.map(f).filter(v=>v!=null);
- return{n:ds.length,train:ds.filter(d=>d.train==='train').length,walk:ds.filter(d=>d.habits.camine).length,
+ return{n:ds.length,train:ds.filter(trained).length,walk:ds.filter(d=>d.habits.camine).length,
  sleep:avg(g(d=>d.sleep)),neck:avg(g(d=>d.neck)),back:avg(g(d=>d.back)),energy:avg(g(d=>d.energy)),
  fasts:ds.filter(d=>d.fast.on).length,fastH:avg(ds.filter(d=>d.fast.on).map(d=>d.fast.h)),
  sweets:ds.reduce((s,d)=>s+d.sweets,0),prot:ds.length?ds.reduce((s,d)=>s+Object.values(d.prot).filter(Boolean).length,0)/(ds.length*4):null,
@@ -688,22 +688,34 @@ function fitCard(){const ks=Object.keys(db).sort(),f=ks.findIndex(k=>db[k]&&db[k
  <div class="legend"><span><i style="background:#0F6E56"></i>3 entrenos</span><span><i style="background:#BA7517"></i>2</span><span><i style="background:#E0A24A"></i>1</span><span><i style="background:#C0392B"></i>0</span><span><i style="background:#1F3A5F"></i>Tendencia (promedio que suaviza las semanas)</span></div>
  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">${stat(tot,'entrenos en total')}${stat(full,'semanas completas (3/3)')}${stat(Math.round(avg4*10)/10+'/3','promedio últimas 4 semanas')}${stat(cr,'semanas seguidas con 2+ (mejor: '+best+')')}</div></div>`}
 let pv='mes';
-const PHAB=[['train','Entreno','💪',d=>d.train==='train'],['comidas','Comidas completas','🍽️',d=>mealsFull(d)]];
-function hexSvg(cx,cy,r,fill,stroke,sw,label,tc,title){const q=r*.866,fs=r>=14?12:8;
- return `<g><title>${title||''}</title><polygon points="${cx-r},${cy} ${cx-r/2},${cy-q} ${cx+r/2},${cy-q} ${cx+r},${cy} ${cx+r/2},${cy+q} ${cx-r/2},${cy+q}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>${label!=null?`<text x="${cx}" y="${cy+fs/3}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${tc}">${label}</text>`:''}</g>`}
-function hexGrid(keys,cols,r,fn,num){const td=todayKey(),P=2*r+2,RP=1.73*r+3,rows=Math.ceil(keys.length/cols),W=cols*P+P/2+4,H=(rows-1)*RP+2*.866*r+6;let s='';
- keys.forEach((k,i)=>{const row=Math.floor(i/cols),col=i%cols,cx=r+3+col*P+(row%2?P/2:0),cy=.866*r+3+row*RP,d=db[k],fut=k>td,on=!fut&&d&&fn(d),isT=k===td,dd=+k.slice(8);
-  s+=hexSvg(cx,cy,r,on?'#0F6E56':fut?'#F1F2EE':'#fff',isT?'#1F3A5F':on?'#0F6E56':fut?'#D5D7D0':'#9AA39C',isT?2.6:1.2,num?dd:null,on?'#fff':fut?'#BBB':'#555',k+(on?' ✓':''))});
- return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${num?'330px':'520px'};display:block;margin:0 auto">${s}</svg>`}
+const trained=d=>!!d&&(d.train==='train'||[0,1,2].some(n=>dayDone(d,n)));
+const PHAB=[['train','Entreno','💪',trained],['comidas','Comidas completas','🍽️',d=>mealsFull(d)]];
+function hexSvg(cx,cy,r,fill,stroke,sw,label,tc,title,fs){const q=r*.866;
+ return `<g><title>${title||''}</title><polygon points="${cx},${cy-r} ${cx+q},${cy-r/2} ${cx+q},${cy+r/2} ${cx},${cy+r} ${cx-q},${cy+r/2} ${cx-q},${cy-r/2}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>${label!=null?`<text x="${cx}" y="${cy+fs/3}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${tc}">${label}</text>`:''}</g>`}
+function hexLook(k,fn,td){const d=db[k],fut=k>td,on=!fut&&d&&fn(d),isT=k===td;
+ return{on,fut,isT,fill:on?'#0F6E56':fut?'#FFFFFF':'#F4F5F1',stroke:isT?'#1F3A5F':on?'#0B5A47':fut?'#E3E5DF':'#C9CEC5',sw:isT?3:1.4,tc:on?'#fff':fut?'#C4C7C0':'#7A8078'}}
+function monthGrid(ym,fn){const [Y,M]=ym.split('-').map(Number),nd=new Date(Y,M,0).getDate(),off=(new Date(Y,M-1,1).getDay()+6)%7,td=todayKey(),r=19,q=r*.866,P=2*q+9,RP=2*r+7,rows=Math.ceil((off+nd)/7),W=7*P+4,H=22+rows*RP;
+ let s='LMXJVSD'.split('').map((l,i)=>`<text x="${q+2+i*P}" y="12" text-anchor="middle" font-size="11" font-weight="700" fill="#8A9088">${l}</text>`).join('');
+ for(let i=1;i<=nd;i++){const k=ym+'-'+String(i).padStart(2,'0'),idx=off+i-1,L=hexLook(k,fn,td);
+  s+=hexSvg(q+2+(idx%7)*P,22+r+Math.floor(idx/7)*RP,r,L.fill,L.stroke,L.sw,i,L.tc,k+(L.on?' ✓':''),13)}
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:340px;display:block;margin:0 auto">${s}</svg>`}
+function yearGrid(Y,fn){const td=todayKey(),r=14.5,q=r*.866,P=2*q+3,RP=2*r+8,L0=46,W=L0+31*P+4,H=24+12*RP;let s='',doy=0;
+ for(let i=1;i<=31;i++)s+=`<text x="${L0+q+(i-1)*P}" y="12" text-anchor="middle" font-size="9" fill="#9AA09A">${i}</text>`;
+ for(let m=1;m<=12;m++){const nd=new Date(+Y,m,0).getDate(),cy=24+r+(m-1)*RP;
+  s+=`<text x="2" y="${cy+4}" font-size="12" font-weight="800" fill="#5E665F">${MONTHS[m-1].slice(0,3).toUpperCase()}</text>`;
+  if(m>1)s+=`<line x1="0" x2="${W}" y1="${cy-r-4}" y2="${cy-r-4}" stroke="#E6E8E2"/>`;
+  for(let i=1;i<=nd;i++){doy++;const k=Y+'-'+String(m).padStart(2,'0')+'-'+String(i).padStart(2,'0'),Lk=hexLook(k,fn,td);
+   s+=hexSvg(L0+q+(i-1)*P,cy,r,Lk.fill,Lk.stroke,Lk.isT?2.6:1.2,doy,Lk.tc,'Día '+doy+' del año · '+i+'/'+m+(Lk.on?' ✓':''),8.5)}}
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${s}</svg>`}
 function vProgreso(){const td=todayKey(),Y=td.slice(0,4),ym=td.slice(0,7),mn=MONTHS[+td.slice(5,7)-1];
  const first=pv==='mes'?ym+'-01':Y+'-01-01',keys=[];for(let k=first;k<=td;k=addDays(k,1))keys.push(k);
  const S=stats(keys),kp=(l,n,sub)=>`<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="sub">${sub||''}</div></div>`;
  const nowD=new Date(),dow=(nowD.getDay()+6)%7,mon=addDays(td,-dow);let rows='';
  for(let w=0;w<8;w++){const st=addDays(mon,-7*w),ks=Array.from({length:7},(_,i)=>addDays(st,i)),s=stats(ks),d=fromKey(st);
   rows+=`<tr><td>${d.getDate()}/${d.getMonth()+1}${w===0?' <span class="sub">(actual)</span>':''}</td><td>${s.train}/3</td><td>${s.walk}</td><td>${f1(s.sleep)}</td><td>${s.pomos}</td></tr>`}
- const all=[];const f0=pv==='mes'?ym+'-01':Y+'-01-01',nd=pv==='mes'?new Date(+Y,+ym.slice(5),0).getDate():(((+Y%4===0&&+Y%100!==0)||+Y%400===0)?366:365);
- for(let i=0;i<nd;i++)all.push(addDays(f0,i));
- const body='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:10px;margin-bottom:12px">'+PHAB.map(x=>`<div class="card" style="padding:12px 16px"><div class="ct" style="margin-bottom:8px">${x[2]} ${x[1]} <span class="sub" style="font-weight:600">· ${keys.filter(k=>db[k]&&x[3](db[k])).length} días${pv==='anio'?' de '+nd:''}</span></div>${hexGrid(all,pv==='mes'?6:19,pv==='mes'?17:9,x[3],pv==='mes')}</div>`).join('')+'</div>'+(pv==='anio'?'<div class="legend" style="margin:-4px 0 12px"><span><i style="background:#0F6E56"></i>Hecho</span><span><i style="background:#fff;border:1px solid #9AA39C"></i>No hecho</span><span><i style="background:#F1F2EE"></i>Futuro</span><span>Empieza el 1/1, de izquierda a derecha (pasá el mouse para ver la fecha)</span></div>':'');
+ const nd=pv==='mes'?new Date(+Y,+ym.slice(5),0).getDate():(((+Y%4===0&&+Y%100!==0)||+Y%400===0)?366:365);
+ const cnt=x=>keys.filter(k=>db[k]&&x[3](db[k])).length;
+ const body=`<div style="display:grid;grid-template-columns:${pv==='mes'?'repeat(auto-fit,minmax(min(100%,340px),1fr))':'1fr'};gap:10px;margin-bottom:12px">`+PHAB.map(x=>`<div class="card" style="padding:14px 16px"><div class="ch"><span class="ct">${x[2]} ${x[1]}</span><span class="badge">${cnt(x)} de ${nd} días</span></div>${pv==='mes'?monthGrid(ym,x[3]):yearGrid(Y,x[3])}</div>`).join('')+'</div>';
  return `<div class="seg"><button class="${pv==='mes'?'on':''}" onclick="pv='mes';render()">${mn} (mes actual)</button><button class="${pv==='anio'?'on':''}" onclick="pv='anio';render()">Todo el año</button></div>
  ${body}
  <div class="kpis">
