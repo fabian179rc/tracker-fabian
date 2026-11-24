@@ -663,23 +663,29 @@ function barChart(keys,fn,max,color,target){const W=320,H=130,L=22,R=8,Tp=8,B=20
  return s+axisLbl(keys,x,H)+'</svg>'}
 function fitCard(){const ks=Object.keys(db).sort(),f=ks.findIndex(k=>db[k]&&db[k].train==='train');
  if(f<0)return '';
- const td=todayKey(),pts=[];let v=0;
- for(let k=ks[f];k<=td;k=addDays(k,1)){const d=db[k];
-  if(d&&d.train==='train')v+=1;else if(k<td)v=Math.max(0,v-0.5);
-  pts.push({k,v})}
+ const td=todayKey(),mon=k=>addDays(k,-((fromKey(k).getDay()+6)%7)),m0=mon(ks[f]),m1=mon(td),wk=[];
+ for(let m=m0;m<=m1;m=addDays(m,7)){let n=0;for(let i=0;i<7;i++){const d=db[addDays(m,i)];if(d&&d.train==='train')n++}wk.push({m,n:Math.min(n,3),cur:m===m1})}
+ let e=null;wk.forEach(w=>{w.e=e==null?w.n:(w.cur&&w.n===0)?e:e*0.65+w.n*0.35;e=w.e});
+ const done=wk.filter(w=>!w.cur),tot=wk.reduce((s,w)=>s+w.n,0),full=done.filter(w=>w.n>=3).length,
+  last4=done.slice(-4),avg4=last4.length?last4.reduce((s,w)=>s+w.n,0)/last4.length:0;
+ let best=0,run=0;done.forEach(w=>{if(w.n>=2){run++;best=Math.max(best,run)}else run=0});
+ let cr=0;for(let i=done.length-1;i>=0&&done[i].n>=2;i--)cr++;
  const vw=(document.getElementById('view')||{}).clientWidth||0,W=vw>0?Math.max(320,Math.min(1150,vw-34)):320;
- const L=30,R=14,Tp=12,pw=W-L-R,step=pts.length>1?pw/(pts.length-1):0,rot=step<30,B=rot?44:22,H=rot?250:210,ph=H-Tp-B;
- const x=i=>pts.length===1?L+pw/2:L+i*step,every=Math.max(1,Math.ceil(30/Math.max(step,1)));
- const mx=Math.max(3,Math.ceil(Math.max(...pts.map(p=>p.v)))),y=u=>Tp+ph-(u/mx)*ph;
+ const L=30,R=14,Tp=14,B=26,H=210,pw=W-L-R,ph=H-Tp-B,bw=pw/wk.length,y=u=>Tp+ph-(u/3)*ph,x=i=>L+i*bw+bw/2;
+ const col=n=>n>=3?'#0F6E56':n===2?'#BA7517':n===1?'#E0A24A':'#C0392B';
  let sv=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;font-size:11px">`;
- [0,mx/2,mx].forEach(u=>sv+=`<line x1="${L}" x2="${W-R}" y1="${y(u)}" y2="${y(u)}" stroke="#E6E7E1"/><text x="${L-5}" y="${y(u)+3}" text-anchor="end">${Math.round(u*10)/10}</text>`);
- sv+=`<polyline fill="none" stroke="#0F6E56" stroke-width="1.6" stroke-linejoin="round" points="${pts.map((p,i)=>x(i)+','+y(p.v)).join(' ')}"/>`;
- pts.forEach((p,i)=>{const d=fromKey(p.k),lb=d.getDate()+'/'+(d.getMonth()+1),tr=db[p.k]&&db[p.k].train==='train';
-  sv+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="${tr?2.6:1.8}" fill="${tr?'#0F6E56':'#C0392B'}"/>`;
-  if((pts.length-1-i)%every===0)sv+=rot?`<text transform="translate(${x(i)+3},${H-B+10}) rotate(-60)" text-anchor="end" font-size="10">${lb}</text>`:`<text x="${x(i)}" y="${H-6}" text-anchor="middle">${lb}</text>`});
+ [0,1,2,3].forEach(u=>sv+=`<line x1="${L}" x2="${W-R}" y1="${y(u)}" y2="${y(u)}" stroke="${u===3?'#BFD9CF':'#E6E7E1'}" ${u===3?'stroke-dasharray="4 3"':''}/><text x="${L-5}" y="${y(u)+3}" text-anchor="end">${u}</text>`);
+ const every=Math.max(1,Math.ceil(34/Math.max(bw,1)));
+ wk.forEach((w,i)=>{const bwid=Math.max(Math.min(bw*.62,40),3);
+  if(w.n>0)sv+=`<rect x="${x(i)-bwid/2}" y="${y(w.n)}" width="${bwid}" height="${y(0)-y(w.n)}" rx="3" fill="${col(w.n)}" ${w.cur?'opacity=".6"':''}><title>Semana del ${fromKey(w.m).getDate()}/${fromKey(w.m).getMonth()+1}: ${w.n} de 3 entrenos</title></rect>`;
+  else if(!w.cur)sv+=`<rect x="${x(i)-bwid/2}" y="${y(0)-3}" width="${bwid}" height="3" rx="1.5" fill="#C0392B"><title>Semana sin entrenar</title></rect>`;
+  if((wk.length-1-i)%every===0){const d=fromKey(w.m);sv+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="10">${d.getDate()}/${d.getMonth()+1}</text>`}});
+ if(wk.length>1)sv+=`<polyline fill="none" stroke="#1F3A5F" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" points="${wk.map((w,i)=>x(i)+','+y(w.e)).join(' ')}"/>`+wk.map((w,i)=>`<circle cx="${x(i)}" cy="${y(w.e)}" r="2.8" fill="#1F3A5F"/>`).join('');
  sv+='</svg>';
- const last=pts[pts.length-1].v;
- return `<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">Progreso acumulado</span><span class="badge">${Math.round(last*10)/10} puntos</span></div>${sv}<div class="legend"><span><i style="background:#0F6E56"></i>Entreno: +1</span><span><i style="background:#C0392B"></i>Sin entreno: −0,5</span><span>Desde ${fromKey(ks[f]).getDate()}/${fromKey(ks[f]).getMonth()+1}, todo el historial</span></div></div>`}
+ const c=wk[wk.length-1],stat=(v,t)=>`<div style="flex:1;min-width:110px"><div style="font-size:22px;font-weight:800;color:var(--brand)">${v}</div><div class="sub">${t}</div></div>`;
+ return `<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">Progreso por semana</span><span class="badge">Esta semana ${c.n}/3${c.n>=3?' 🎉':''}</span></div>${sv}
+ <div class="legend"><span><i style="background:#0F6E56"></i>3 entrenos</span><span><i style="background:#BA7517"></i>2</span><span><i style="background:#E0A24A"></i>1</span><span><i style="background:#C0392B"></i>0</span><span><i style="background:#1F3A5F"></i>Tendencia (promedio que suaviza las semanas)</span></div>
+ <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">${stat(tot,'entrenos en total')}${stat(full,'semanas completas (3/3)')}${stat(Math.round(avg4*10)/10+'/3','promedio últimas 4 semanas')}${stat(cr,'semanas seguidas con 2+ (mejor: '+best+')')}</div></div>`}
 function vProgreso(){const keys=keysBack(range,todayKey()),prev=keysBack(range,addDays(todayKey(),-range));
  const S=stats(keys),P=stats(prev),wk=range/7;
  const kp=(l,n,sub,tr)=>`<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="sub">${sub||''}</div>${tr||''}</div>`;
